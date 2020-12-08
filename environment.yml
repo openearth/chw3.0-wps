@@ -1,9 +1,10 @@
-name: chw
+name: chw3
 channels:
   - anaconda
   - conda-forge
   - defaults
 dependencies:
+  - shapely=1.7.*
   - geojson=2.5.*
   - numpy=1.17.*
   - owslib=0.20.*
