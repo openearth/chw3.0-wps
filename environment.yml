@@ -1,0 +1,17 @@
+name: chw
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - geojson=2.5.*
+  - numpy=1.17.*
+  - owslib=0.20.*
+  - pip=20.2.*
+  - psycopg2=2.8.*
+  - python=3.7.*
+  - rasterio=1.1.7
+  - scipy=1.5.*
+  - flask=1.1.*
+  - pip:
+    - pywps==4.2.2
