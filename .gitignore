@@ -1,0 +1,22 @@
+*.pyc
+workdir/*
+outputs/*
+logs/*
+tests/*
+processes/configuration.txt
+notebooks/test.tif
+# vim, mac os
+*.sw*
+.DS_Store
+.*.un~
+.idea
+
+# python setup.py build/install artifacts
+build
+dist
+pywps_demo.egg-info/
+
+# docs build artifacts
+_build/
+
+# add the config file
