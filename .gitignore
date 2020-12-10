@@ -2,7 +2,10 @@
 workdir/*
 outputs/*
 logs/*
-tests/*
+tmp/*
+data/*
+static/*
+processes/outputs/*
 processes/configuration.txt
 notebooks/test.tif
 # vim, mac os
