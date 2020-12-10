@@ -94,21 +94,30 @@ class WpsChw20(Process):
         line_str = request.inputs["transect"][0].data
         # load geojson
         line_geojson = geojson.loads(line_str)
-
+        # Initiate chw object
         chw = CHW(line_geojson)
+        # 1st level check
         chw.get_info_geological_layout()
+        # 2nd level check
         chw.get_info_wave_exposure()
+        # 3rd level check
         chw.get_info_tida_range()
+        # 4th level check
         chw.get_info_flora_fauna()
+        # 5th level check
         chw.get_info_sediment_balance()
+        # 6th level check
         chw.get_info_storm_climate()
+
+        # classify hazards according to coastalhazardwheel decision tree
         chw.hazards_classification()
+        # get proposed measures
         chw.provide_measures()
 
         output = write_output(chw)
         response.outputs["output_json"].data = json.dumps(output)
 
-        close_db_connection()
+        # close_db_connection()
         # except Exception as e:
         # res = {"errMsg": "ERROR: {}".format(e)}
         # response.outputs["output_json"].data = json.dumps(res)

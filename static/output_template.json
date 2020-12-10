@@ -16,7 +16,7 @@
 			{
 				"title": "Coastal environment",
 				"code": "{{ chw.code }}",
-				"slope": "Sample",
+				"slope": "{{ chw.slope }}",
 				"Ecosystem disruption": "{{ chw.ecosystem_disruption }}",
 				"Gradual inundation": "{{ chw.gradual_inundation }}",
 				"Salt water intrusion": "{{ chw.salt_water_intrusion }}",

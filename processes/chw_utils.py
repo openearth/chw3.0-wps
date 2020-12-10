@@ -99,7 +99,7 @@ class CHW:
         self.elevations, self.segments = get_elevation_profile(
             dem, self.transect_projected, self.transect_length, dem_reprojected
         )
-        self.slope = calc_slope(self.elevations, self.segments)
+        self.slope = round(calc_slope(self.elevations, self.segments), 3)
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -168,10 +168,8 @@ class CHW:
     def get_info_storm_climate(self):
         self.storm_climate = get_cyclone_risk(self.transect_wkt)
 
-    # TODO method Classify hazards
     def hazards_classification(self):
-        # TODO connects to database and retrieves the class for the hazards:
-        # according to the decision_wheel.
+
         (
             self.code,
             self.ecosystem_disruption,
@@ -226,13 +224,13 @@ class CHW:
         else:
             geology = ""
 
-        if geology == "su" and self.slope <= 1.6:
+        if geology == "su" and self.slope <= 3:
             return "Sediment plain"
 
-        elif geology == "su" and self.slope > 1.6:
+        elif geology == "su" and self.slope > 3:
             return "Sloping soft rock"
 
-        elif geology != "su" and self.slope <= 1.6:
+        elif geology != "su" and self.slope <= 3:
             return "Flat hard rock"
 
         else:

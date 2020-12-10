@@ -169,6 +169,7 @@ def calc_slope(
             a = linregress(distances, elevations)
             slopes.append(a.slope)
 
+    slopes = [abs(slope * 100) for slope in slopes]
     # median_slope = statistics.median(slopes)
     max_slope = max(slopes)
     return max_slope
