@@ -229,7 +229,7 @@ def get_shorelinechange_values(wkt, crs=4326, dist=100000):
 
 
 def get_cyclone_risk(wkt, crs=4326, dist=100000):
-    """ocea.shorelinechange
+    """ocean.shorelinechange
     values to expect:
     Yes
     No
@@ -246,6 +246,35 @@ def get_cyclone_risk(wkt, crs=4326, dist=100000):
     cursor.execute(query)
     cyclone_risk = cursor.fetchone()[0]
     return cyclone_risk
+
+
+def fetch_closest_coasts(
+    wkt,
+    transect_length,
+    crs=4326,
+    dist=10000,
+):
+    """coast.coast_segments
+    values to expect:
+    coasts ids
+    """
+    transect = f"ST_GeomFromText('{wkt}', {crs})"
+
+    A = f"ST_StartPoint({transect})"
+    B = f"ST_EndPoint({transect})"
+    azimuth = f"ST_Azimuth({B}::geometry,{A}::geometry)"
+    extension_length = transect_length + dist
+    projection = f"ST_Project({A}, {extension_length}, {azimuth})"
+
+    # It should be returned in LineString format
+    extended_line = f"ST_MakeLine({B}::geometry, {projection}::geometry)"
+
+    query = f"""SELECT gid
+            FROM coast.osm_coastline
+            WHERE ST_Intersects(geom, {extended_line})"""
+    cursor.execute(query)
+    coast_lines = cursor.fetchall()
+    return coast_lines
 
 
 def get_classes(
