@@ -127,6 +127,12 @@ class CHW:
             )
             if len(closest_coasts) > 1:
                 self.wave_exposure = "Protected"
+        elif self.wave_exposure == "exposed":
+            closest_coasts = fetch_closest_coasts(
+                self.transect_wkt, self.transect_length
+            )
+            if len(closest_coasts) > 1:
+                self.wave_exposure = "moderataly exposed"
 
     # 3rd level check
     def get_info_tida_range(self):

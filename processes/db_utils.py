@@ -254,7 +254,7 @@ def fetch_closest_coasts(
     crs=4326,
     dist=10000,
 ):
-    """ocean.coast_segments
+    """coast.coast_segments
     values to expect:
     coasts ids
     """
@@ -270,11 +270,10 @@ def fetch_closest_coasts(
     extended_line = f"ST_MakeLine({B}::geometry, {projection}::geometry)"
 
     query = f"""SELECT gid
-            FROM coast.coast_segments
+            FROM coast.osm_coastline
             WHERE ST_Intersects(geom, {extended_line})"""
     cursor.execute(query)
     coast_lines = cursor.fetchall()
-    print("coast_lines", coast_lines)
     return coast_lines
 
 
