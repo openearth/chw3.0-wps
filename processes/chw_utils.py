@@ -238,11 +238,13 @@ class CHW:
 
     def check_barrier(self) -> bool:
         sea_pattern = detect_sea_patterns(self.elevations)
-        land_sea_changes = np.count_nonzero(sea_pattern is True)
-        if land_sea_changes > 1:
+        land_sea_changes = np.argwhere(sea_pattern == True)
+        print("land_sea_changes", land_sea_changes)
+        if land_sea_changes.shape[0] > 1:
             barrier = True
         else:
             barrier = False
+        print("barrier", barrier)
         return barrier
 
     def get_vegetation(self):
