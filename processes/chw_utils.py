@@ -53,6 +53,7 @@ from .db_utils import (
     get_cyclone_risk,
     get_classes,
     get_measures,
+    fetch_closest_coasts,
 )
 from .raster_utils import (
     calc_slope,
@@ -106,13 +107,12 @@ class CHW:
         # TODO check correct order of checks
         if self.check_barrier():
             self.geological_layout = "Barrier"
-
-        elif intersect_with_estuaries(self.transect_wkt):
+        # Extra check the slope for Delta low estuaries
+        elif intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
         elif intersect_with_corals(self.transect_wkt):
-            # TODO Do I check correctly for coral islands?
-            # NOTE what is a coral island?
+            # TODO coral islands check
             self.geological_layout = "Coral island"
 
         else:
@@ -121,6 +121,12 @@ class CHW:
     # 2nd level check
     def get_info_wave_exposure(self):
         self.wave_exposure = get_wave_exposure_value(self.transect_wkt)
+        if self.wave_exposure == "moderately exposed":
+            closest_coasts = fetch_closest_coasts(
+                self.transect_wkt, self.transect_length
+            )
+            if len(closest_coasts) > 1:
+                self.wave_exposure = "Protected"
 
     # 3rd level check
     def get_info_tida_range(self):
@@ -239,12 +245,10 @@ class CHW:
     def check_barrier(self) -> bool:
         sea_pattern = detect_sea_patterns(self.elevations)
         land_sea_changes = np.argwhere(sea_pattern == True)
-        print("land_sea_changes", land_sea_changes)
         if land_sea_changes.shape[0] > 1:
             barrier = True
         else:
             barrier = False
-        print("barrier", barrier)
         return barrier
 
     def get_vegetation(self):
