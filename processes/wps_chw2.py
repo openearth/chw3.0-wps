@@ -45,7 +45,6 @@ import logging
 import geojson
 from pathlib import Path
 
-from .db_utils import close_db_connection
 from .chw_utils import CHW
 from .utils import write_output
 
@@ -89,7 +88,7 @@ class WpsChw20(Process):
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
         # try:
-
+        print("request was made")
         # Read input
         line_str = request.inputs["transect"][0].data
         # load geojson
@@ -113,6 +112,8 @@ class WpsChw20(Process):
         chw.hazards_classification()
         # get proposed measures
         chw.provide_measures()
+
+        chw.db.close_db_connection()
 
         output = write_output(chw)
         response.outputs["output_json"].data = json.dumps(output)
