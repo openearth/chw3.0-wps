@@ -39,23 +39,21 @@ from pywps.inout.inputs import ComplexInput, LiteralInput
 from pywps.inout.outputs import ComplexOutput
 from pywps.app.Common import Metadata
 
-import time
 import json
-import logging
 import geojson
-from pathlib import Path
 
-from .chw_utils import CHW
-from .utils import write_output
+from .utils import read_config
+from .db_utils import DB
+from .vector_utils import geojson_to_wkt
 
 
-class WpsChw20(Process):
+class WpsCreateTransect(Process):
     def __init__(self):
         # Input [in json format ]
         inputs = [
             ComplexInput(
-                identifier="transect",
-                title="transect",
+                identifier="point",
+                title="point",
                 supported_formats=[Format("application/json")],
                 abstract="Complex input abstract",
             )
@@ -65,20 +63,23 @@ class WpsChw20(Process):
         outputs = [
             ComplexOutput(
                 identifier="output_json",
-                title="Output of the CoastaHazardWheel",
+                title="Perpedicular transect over the coast line",
                 supported_formats=[Format("application/json")],
             )
         ]
 
-        super(WpsChw20, self).__init__(
+        super(WpsCreateTransect, self).__init__(
             self._handler,
-            identifier="chw2_risk_classification",
-            version="2.0",
-            title="Risk classification of a coastline.",
-            abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 
-                        trigger to derive data from global datasets and re-classifies this data to classes that are input for a process that follows the CHW approach to classify the potenital risk of a coast line.""",
+            identifier="create_transect",
+            version="1.0",
+            title="Create perpedicular transect on a coast line",
+            abstract="""Creates perpedicular line on a coast line from a given point. Checks also if the given point is 
+            in the sea or on the land""",
             profile="",
-            metadata=[Metadata("WpsChw2_0"), Metadata("Chw2_0/risk_classification")],
+            metadata=[
+                Metadata("WpsCreateTransect"),
+                Metadata("create_transect"),
+            ],
             inputs=inputs,
             outputs=outputs,
             store_supported=False,
@@ -88,43 +89,24 @@ class WpsChw20(Process):
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
 
-        try:
-            # Read input
-            line_str = request.inputs["transect"][0].data
-            # load geojson
-            line_geojson = geojson.loads(line_str)
-        except Exception:
-            msg = "Failed to read the input"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
-            # Initiate chw object
-            chw = CHW(line_geojson)
-            # 1st level check
-            chw.get_info_geological_layout()
-            # 2nd level check
-            chw.get_info_wave_exposure()
-            # 3rd level check
-            chw.get_info_tida_range()
-            # 4th level check
-            chw.get_info_flora_fauna()
-            # 5th level check
-            chw.get_info_sediment_balance()
-            # 6th level check
-            chw.get_info_storm_climate()
-        except Exception:
-            msg = "Something went wrong in the retrieval of the information"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+        # try:
+        host, user, password, db, port, _, _, _ = read_config()
+        db = DB(user, password, host, db)
 
-        try:
-            # classify hazards according to coastalhazardwheel decision tree
-            chw.hazards_classification()
-            # get measures
-            chw.provide_measures()
-            output = write_output(chw)
+        # Read input
+        point_str = request.inputs["point"][0].data
+        # load geojson
+        point_geojson = geojson.loads(point_str)
+        point_wkt = geojson_to_wkt(point_geojson)
+
+        if db.point_in_landpolygon(point_wkt):
+            output = {"errMsg": "Please select a point on the sea"}
             response.outputs["output_json"].data = json.dumps(output)
-        except Exception:
-            msg = "Something went wrong during the classification"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+        else:
+            print("do magic")
+            output = {"correct message": "do magic"}
+            response.outputs["output_json"].data = json.dumps(output)
+        # except Exception:
+        #    msg = "Something went wrong in the process"
+        #    res = {"errMsg": msg}
+        #    response.outputs["output_json"].data = json.dumps(res)

@@ -41,9 +41,10 @@ from processes.ultimate_question import UltimateQuestion
 
 # chw2
 from processes.wps_chw2 import WpsChw20
+from processes.wps_create_transect import WpsCreateTransect
 
 # TODO add the proces in the processes list
-processes = [UltimateQuestion(), WpsChw20()]
+processes = [UltimateQuestion(), WpsChw20(), WpsCreateTransect()]
 
 # Description used in template
 process_descriptor = {}
