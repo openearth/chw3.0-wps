@@ -40,21 +40,23 @@
 from pathlib import Path
 from typing import Any, List
 import numpy as np
-from .db_utils import (
-    get_geol_glim_values,
-    get_wave_exposure_value,
-    intersect_with_corals,
-    intersect_with_estuaries,
-    intersect_with_mangroves,
-    intersect_with_saltmarshes,
-    get_tidal_range_values,
-    get_sediment_changerate_values,
-    get_shorelinechange_values,
-    get_cyclone_risk,
-    get_classes,
-    get_measures,
-    fetch_closest_coasts,
-)
+from .db_utils import DB
+
+# from .db_utils import (
+#    get_geol_glim_values,
+#    get_wave_exposure_value,
+#    intersect_with_corals,
+#    intersect_with_estuaries,
+#    intersect_with_mangroves,
+#    intersect_with_saltmarshes,
+#    get_tidal_range_values,
+#    get_sediment_changerate_values,
+#    get_shorelinechange_values,
+#    get_cyclone_risk,
+#    get_classes,
+#    get_measures,
+#    fetch_closest_coasts,
+# )
 from .raster_utils import (
     calc_slope,
     cut_wcs,
@@ -70,7 +72,7 @@ output_dir = create_temp_dir(service_path / "outputs")
 dem = Path(output_dir) / "dem.tif"
 dem_reprojected = Path(output_dir) / "dem_reprojected.tif"
 globcover = Path(output_dir) / "globcover.tif"
-_, _, _, _, _, owsurl, dem_layer, landuse_layer = read_config()
+host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
 
 
 class CHW:
@@ -101,6 +103,7 @@ class CHW:
             dem, self.transect_projected, self.transect_length, dem_reprojected
         )
         self.slope = round(calc_slope(self.elevations, self.segments), 3)
+        self.db = DB(user, password, host, db)
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -108,10 +111,10 @@ class CHW:
         if self.check_barrier():
             self.geological_layout = "Barrier"
         # Extra check the slope for Delta low estuaries
-        elif intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
+        elif self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
-        elif intersect_with_corals(self.transect_wkt):
+        elif self.db.intersect_with_corals(self.transect_wkt):
             # TODO coral islands check
             self.geological_layout = "Coral island"
 
@@ -120,23 +123,23 @@ class CHW:
 
     # 2nd level check
     def get_info_wave_exposure(self):
-        self.wave_exposure = get_wave_exposure_value(self.transect_wkt)
+        self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
         if self.wave_exposure == "moderately exposed":
-            closest_coasts = fetch_closest_coasts(
+            closest_coasts = self.db.fetch_closest_coasts(
                 self.transect_wkt, self.transect_length
             )
             if len(closest_coasts) > 1:
                 self.wave_exposure = "Protected"
         elif self.wave_exposure == "exposed":
-            closest_coasts = fetch_closest_coasts(
+            closest_coasts = self.db.fetch_closest_coasts(
                 self.transect_wkt, self.transect_length
             )
             if len(closest_coasts) > 1:
-                self.wave_exposure = "moderataly exposed"
+                self.wave_exposure = "moderately exposed"
 
     # 3rd level check
     def get_info_tida_range(self):
-        self.tidal_range = get_tidal_range_values(self.transect_wkt)
+        self.tidal_range = self.db.get_tidal_range_values(self.transect_wkt)
 
     # 4th level check
     def get_info_flora_fauna(self):
@@ -144,22 +147,21 @@ class CHW:
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
         elif self.geological_layout in {"Sloping hard rock", "Flat hard rock"}:
-            if intersect_with_corals(self.transect_wkt):
+            if self.db.intersect_with_corals(self.transect_wkt):
                 self.flora_fauna = "Corals"
-            elif intersect_with_mangroves(
+            elif self.db.intersect_with_mangroves(
                 self.transect_wkt
-            ) or intersect_with_saltmarshes(self.transect_wkt):
+            ) or self.db.intersect_with_saltmarshes(self.transect_wkt):
                 self.flora_fauna = "Marsh/mangrove"
-
         else:
-            if intersect_with_saltmarshes(self.transect_wkt):
+            if self.db.intersect_with_saltmarshes(self.transect_wkt):
                 self.flora_fauna = (
                     "Intermittent marsh"
                     if self.tidal_range == "micro"
                     else "Marsh/tidal flat"
                 )
 
-            elif intersect_with_mangroves(self.transect_wkt):
+            elif self.db.intersect_with_mangroves(self.transect_wkt):
                 self.flora_fauna = (
                     "Intermittent mangrove"
                     if self.tidal_range == "micro"
@@ -171,14 +173,14 @@ class CHW:
         if self.geological_layout in {"Flat hard rock", "Sloping hard rock"}:
             self.sediment_balance = "Beach"
         elif (
-            get_shorelinechange_values(self.transect_wkt) != "Low"
-            and get_sediment_changerate_values(self.transect_wkt) > 0
+            self.db.get_shorelinechange_values(self.transect_wkt) != "Low"
+            and self.db.get_sediment_changerate_values(self.transect_wkt) > 0
         ):
             self.sediment_balance = "Surplus"
 
     # 6th level check
     def get_info_storm_climate(self):
-        self.storm_climate = get_cyclone_risk(self.transect_wkt)
+        self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
 
     def hazards_classification(self):
 
@@ -189,7 +191,7 @@ class CHW:
             self.salt_water_intrusion,
             self.erosion,
             self.flooding,
-        ) = get_classes(
+        ) = self.db.get_classes(
             self.geological_layout,
             self.wave_exposure,
             self.tidal_range,
@@ -198,11 +200,10 @@ class CHW:
             self.storm_climate,
         )
 
-    # TODO method Provide measures
     def provide_measures(self):
 
         measures = {}
-        for row in get_measures(self.code):
+        for row in self.db.get_measures(self.code):
             measures.update(
                 {
                     row[0]: row[1],
@@ -227,7 +228,7 @@ class CHW:
             str: The name of the geology type
         """
 
-        geology_values = get_geol_glim_values(self.transect_wkt)
+        geology_values = self.db.get_geol_glim_values(self.transect_wkt)
 
         non_su_values = sum(x != ("su",) for x in geology_values)
         su_values = sum(x == ("su",) for x in geology_values)
@@ -260,10 +261,9 @@ class CHW:
     def get_vegetation(self):
         cut_wcs(*self.bbox, landuse_layer, owsurl, globcover)
         values = read_raster_values(globcover)
-
         non_vegetated = np.count_nonzero(np.logical_and(values >= 190, values <= 220))
         vegetated = np.count_nonzero(np.logical_and(values >= 20, values <= 150))
         if vegetated >= non_vegetated:
-            self.flora_fauna = "Vegetated"
+            return "Vegetated"
         else:
-            self.flora_fauna = "Not vegetated"
+            return "Not vegetated"
