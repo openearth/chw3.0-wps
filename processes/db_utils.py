@@ -336,3 +336,25 @@ class DB:
         measures = cursor.fetchall()
         cursor.close()
         return measures
+
+    def point_in_landpolygon(self, wkt, crs=4326):
+        """coast.osm_landpolygon
+        Args:
+            wkt: str
+            crs: int
+
+
+        Returns:
+            bool: True if point in a land polygon, false if not
+        """
+
+        query = f"""SELECT EXISTS(
+                    SELECT 1
+                    FROM coast.osm_landpolygon
+                    WHERE ST_Contains(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                );"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        point_inland = cursor.fetchone()[0]
+        cursor.close()
+        return point_inland
