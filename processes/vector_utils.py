@@ -40,8 +40,8 @@ def get_bounds(line):
     return g.bounds
 
 
-def geojson_to_wkt(line):
-    g = shape(line.geometry)
+def geojson_to_wkt(feature):
+    g = shape(feature.geometry)
     return g.wkt
 
 
