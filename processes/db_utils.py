@@ -358,3 +358,27 @@ class DB:
         point_inland = cursor.fetchone()[0]
         cursor.close()
         return point_inland
+
+    def create_transect(self, wkt, crs=4326):
+        """coast.osm_landpolygon
+        Args:
+            wkt: str
+            crs: int
+
+
+        Returns:
+            line: GeoJson
+        """
+        query = f"""SELECT ST_AsGeoJson(ST_MakeLine(
+                           ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs})),
+                                           ST_GeomFromText(\'{wkt}\', {crs})))
+                    FROM (SELECT geom
+                    FROM coast.osm_coastline
+                    WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
+                    ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
+                """
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        transect = cursor.fetchone()[0]
+        cursor.close()
+        return transect
