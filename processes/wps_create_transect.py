@@ -108,6 +108,6 @@ class WpsCreateTransect(Process):
                 output = {"transect_coordinates": transect_geojson["coordinates"]}
                 response.outputs["output_json"].data = json.dumps(output)
         except Exception:
-            msg = "Something went wrong in the process"
+            msg = "Something went wrong during processing"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
