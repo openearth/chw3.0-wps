@@ -89,24 +89,25 @@ class WpsCreateTransect(Process):
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
 
-        # try:
-        host, user, password, db, port, _, _, _ = read_config()
-        db = DB(user, password, host, db)
+        try:
+            host, user, password, db, port, _, _, _ = read_config()
+            db = DB(user, password, host, db)
 
-        # Read input
-        point_str = request.inputs["point"][0].data
-        # load geojson
-        point_geojson = geojson.loads(point_str)
-        point_wkt = geojson_to_wkt(point_geojson)
+            # Read input
+            point_str = request.inputs["point"][0].data
+            # load geojson
+            point_geojson = geojson.loads(point_str)
+            point_wkt = geojson_to_wkt(point_geojson)
 
-        if db.point_in_landpolygon(point_wkt):
-            output = {"errMsg": "Please select a point on the sea"}
-            response.outputs["output_json"].data = json.dumps(output)
-        else:
-            print("do magic")
-            output = {"correct message": "do magic"}
-            response.outputs["output_json"].data = json.dumps(output)
-        # except Exception:
-        #    msg = "Something went wrong in the process"
-        #    res = {"errMsg": msg}
-        #    response.outputs["output_json"].data = json.dumps(res)
+            if db.point_in_landpolygon(point_wkt):
+                output = {"errMsg": "Please select a point on the sea"}
+                response.outputs["output_json"].data = json.dumps(output)
+            else:
+                transect_str = db.create_transect(point_wkt)
+                transect_geojson = geojson.loads(transect_str)
+                output = {"transect_coordinates": transect_geojson["coordinates"]}
+                response.outputs["output_json"].data = json.dumps(output)
+        except Exception:
+            msg = "Something went wrong in the process"
+            res = {"errMsg": msg}
+            response.outputs["output_json"].data = json.dumps(res)
