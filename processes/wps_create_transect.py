@@ -87,7 +87,7 @@ class WpsCreateTransect(Process):
         )
 
     def _handler(self, request, response):
-        """Handler function of the WpsChw2"""
+        """Handler function of the WpsCreateTransect"""
 
         try:
             host, user, password, db, port, _, _, _ = read_config()
