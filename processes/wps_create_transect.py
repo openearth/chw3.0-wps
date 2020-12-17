@@ -44,7 +44,7 @@ import geojson
 
 from .utils import read_config
 from .db_utils import DB
-from .vector_utils import geojson_to_wkt
+from .vector_utils import geojson_to_wkt, wkt_geometry, change_coords
 
 
 class WpsCreateTransect(Process):
@@ -103,9 +103,19 @@ class WpsCreateTransect(Process):
                 output = {"errMsg": "Please select a point on the sea"}
                 response.outputs["output_json"].data = json.dumps(output)
             else:
-                transect_str = db.create_transect(point_wkt)
-                transect_geojson = geojson.loads(transect_str)
-                output = {"transect_coordinates": transect_geojson["coordinates"]}
+
+                transect = db.create_transect_to_coast(point_wkt)
+                length = change_coords(transect).length
+
+                # DEBUG
+
+                transect_extension = db.ST_line_extend(
+                    transect, length, dist=1000, direction=-180
+                )
+
+                transect_geometry = wkt_geometry(transect_extension)
+                print(transect_geometry)
+                output = {"transect_coordinates": transect_geometry["coordinates"]}
                 response.outputs["output_json"].data = json.dumps(output)
         except Exception:
             msg = "Something went wrong during processing"
