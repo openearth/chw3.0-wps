@@ -107,7 +107,6 @@ class CHW:
 
     # 1st level check
     def get_info_geological_layout(self):
-        # TODO check correct order of checks
         if self.check_barrier():
             self.geological_layout = "Barrier"
         # Extra check the slope for Delta low estuaries
