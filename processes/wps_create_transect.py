@@ -107,8 +107,7 @@ class WpsCreateTransect(Process):
                 transect = db.create_transect_to_coast(point_wkt)
                 length = change_coords(transect).length
 
-                # DEBUG
-
+                # NOTE -180 as the first point is the point on the coast
                 transect_extension = db.ST_line_extend(
                     transect, length, dist=1000, direction=-180
                 )
