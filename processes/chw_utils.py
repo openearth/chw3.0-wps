@@ -42,21 +42,7 @@ from typing import Any, List
 import numpy as np
 from .db_utils import DB
 
-# from .db_utils import (
-#    get_geol_glim_values,
-#    get_wave_exposure_value,
-#    intersect_with_corals,
-#    intersect_with_estuaries,
-#    intersect_with_mangroves,
-#    intersect_with_saltmarshes,
-#    get_tidal_range_values,
-#    get_sediment_changerate_values,
-#    get_shorelinechange_values,
-#    get_cyclone_risk,
-#    get_classes,
-#    get_measures,
-#    fetch_closest_coasts,
-# )
+
 from .raster_utils import (
     calc_slope,
     cut_wcs,
@@ -78,7 +64,7 @@ host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
 class CHW:
     def __init__(self, transect):
         self.transect = transect
-
+        self.db = DB(user, password, host, db)
         self.geological_layout = "Any"
         self.wave_exposure = "Any"
         self.tidal_range = "Any"
@@ -94,16 +80,34 @@ class CHW:
 
         self.transect_wkt = geojson_to_wkt(self.transect)
         self.bbox = get_bounds(self.transect)
-        self.transect_projected = change_coords(self.transect)
-        self.transect_length = self.transect_projected.length
+
+        self.transect_length = change_coords(self.transect).length
+
+        # in wkt format as returned from database
+        self.transect10km = self.db.ST_line_extend(
+            self.transect_wkt, self.transect_length, dist=10000, direction=-180
+        )
+        self.transect100km = self.db.ST_line_extend(
+            self.transect_wkt, self.transect_length, dist=100000, direction=-180
+        )
+        self.transect20km = self.db.ST_line_extend(
+            self.transect_wkt, self.transect_length, dist=20000, direction=180
+        )
 
         # get dem
         cut_wcs(*self.bbox, dem_layer, owsurl, dem)
+        # TODO elevations for 20kmfor bariers
         self.elevations, self.segments = get_elevation_profile(
-            dem, self.transect_projected, self.transect_length, dem_reprojected
+            dem=dem,
+            line=change_coords(self.transect20km),
+            line_length=change_coords(self.transect20km).length,
+            outfname=dem_reprojected,
         )
-        self.slope = round(calc_slope(self.elevations, self.segments), 3)
-        self.db = DB(user, password, host, db)
+
+        self.slope = round(
+            calc_slope(self.elevations, self.segments), 3
+        )  # TODO calc_slope will take the elevation and profiles and
+        # will get only the segments till 800 meters
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -117,13 +121,15 @@ class CHW:
             # TODO coral islands check
             self.geological_layout = "Coral island"
 
-        else:
-            self.geological_layout = self.check_geology_type()
+        """else:#NOTE the geological layout table does not exist: Ask Joost
+            self.geological_layout = self.check_geology_type()"""
 
     # 2nd level check
     def get_info_wave_exposure(self):
         self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
-        if self.wave_exposure == "moderately exposed":
+        print(f"wave_exposure that I get from db {self.wave_exposure}")
+        # TODO: comment the fetch cause bug
+        """if self.wave_exposure == "moderately exposed":
             closest_coasts = self.db.fetch_closest_coasts(
                 self.transect_wkt, self.transect_length
             )
@@ -134,7 +140,7 @@ class CHW:
                 self.transect_wkt, self.transect_length
             )
             if len(closest_coasts) > 1:
-                self.wave_exposure = "moderately exposed"
+                self.wave_exposure = "moderately exposed"""
 
     # 3rd level check
     def get_info_tida_range(self):

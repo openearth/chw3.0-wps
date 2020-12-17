@@ -128,6 +128,11 @@ def calc_slope(
 
     x = np.array(segments)
 
+    inland800 = (np.argwhere(x < 900).shape)[0]
+
+    x = x[:inland800]
+    y = y[:inland800]
+
     # slope of every segment
     m = np.diff(y) / np.diff(x)
 
@@ -170,7 +175,6 @@ def calc_slope(
             slopes.append(a.slope)
 
     slopes = [abs(slope * 100) for slope in slopes]
-    # median_slope = statistics.median(slopes)
     max_slope = max(slopes)
     return max_slope
 
