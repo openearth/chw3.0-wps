@@ -44,7 +44,7 @@ import geojson
 
 from .utils import read_config
 from .db_utils import DB
-from .vector_utils import geojson_to_wkt
+from .vector_utils import geojson_to_wkt, wkt_geometry, change_coords
 
 
 class WpsCreateTransect(Process):
@@ -87,26 +87,37 @@ class WpsCreateTransect(Process):
         )
 
     def _handler(self, request, response):
-        """Handler function of the WpsChw2"""
+        """Handler function of the WpsCreateTransect"""
 
-        # try:
-        host, user, password, db, port, _, _, _ = read_config()
-        db = DB(user, password, host, db)
+        try:
+            host, user, password, db, port, _, _, _ = read_config()
+            db = DB(user, password, host, db)
 
-        # Read input
-        point_str = request.inputs["point"][0].data
-        # load geojson
-        point_geojson = geojson.loads(point_str)
-        point_wkt = geojson_to_wkt(point_geojson)
+            # Read input
+            point_str = request.inputs["point"][0].data
+            # load geojson
+            point_geojson = geojson.loads(point_str)
+            point_wkt = geojson_to_wkt(point_geojson)
 
-        if db.point_in_landpolygon(point_wkt):
-            output = {"errMsg": "Please select a point on the sea"}
-            response.outputs["output_json"].data = json.dumps(output)
-        else:
-            print("do magic")
-            output = {"correct message": "do magic"}
-            response.outputs["output_json"].data = json.dumps(output)
-        # except Exception:
-        #    msg = "Something went wrong in the process"
-        #    res = {"errMsg": msg}
-        #    response.outputs["output_json"].data = json.dumps(res)
+            if db.point_in_landpolygon(point_wkt):
+                output = {"errMsg": "Please select a point on the sea"}
+                response.outputs["output_json"].data = json.dumps(output)
+            else:
+
+                transect = db.create_transect_to_coast(point_wkt)
+                length = change_coords(transect).length
+
+                # DEBUG
+
+                transect_extension = db.ST_line_extend(
+                    transect, length, dist=1000, direction=-180
+                )
+
+                transect_geometry = wkt_geometry(transect_extension)
+                print(transect_geometry)
+                output = {"transect_coordinates": transect_geometry["coordinates"]}
+                response.outputs["output_json"].data = json.dumps(output)
+        except Exception:
+            msg = "Something went wrong during processing"
+            res = {"errMsg": msg}
+            response.outputs["output_json"].data = json.dumps(res)

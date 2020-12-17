@@ -45,9 +45,10 @@ def geojson_to_wkt(feature):
     return g.wkt
 
 
-def calc_line_length(line):
-    g = shape(line.geometry)
-    return g.length
+def wkt_geometry(WKT, epsg=4326):
+    g1 = wkt.loads(WKT)  # shapely object
+    g2 = geojson.Feature(geometry=g1, properties={})
+    return g2.geometry
 
 
 def change_coords(line, epsgin="EPSG:4326", epsgout="EPSG:3857"):
@@ -61,7 +62,11 @@ def change_coords(line, epsgin="EPSG:4326", epsgout="EPSG:3857"):
     Returns:
         [type]: [description]
     """
-    g = shape(line.geometry)
+    # Case input is geojson
+    if hasattr(line, "geometry"):
+        g = shape(line.geometry)
+    else:
+        g = wkt.loads(line)
     pyprojc_object = pyproj.Transformer.from_crs(
         pyproj.CRS(epsgin), pyproj.CRS(epsgout), always_xy=True
     ).transform
