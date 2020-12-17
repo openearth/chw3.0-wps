@@ -160,7 +160,7 @@ class DB:
         cursor.close()
         return saltmarshes
 
-    def get_wave_exposure_value(self, wkt, crs=4326, dist=100000):
+    def get_wave_exposure_value(self, wkt, crs=4326, dist=1):
         """ocean.wave_exposure
         values to expect from database:
             exposed
@@ -170,10 +170,10 @@ class DB:
 
         query = f"""SELECT ts_exposure
                     FROM ocean.wave_exposure 
-                    WHERE ST_DWithin(geom::geography, 
-                        ST_GeomFromText(\'{wkt}\', {crs})::geography, {dist}) 
-                    ORDER BY ST_Distance(geom::geography, 
-                                        ST_GeomFromText(\'{wkt}\', {crs})::geography) 
+                    WHERE ST_DWithin(geom, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(geom, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
         cursor.execute(query)
@@ -262,29 +262,23 @@ class DB:
 
     def fetch_closest_coasts(
         self,
-        wkt,
-        transect_length,
-        crs=4326,
-        dist=10000,
+        transect_geom,
     ):
         """coast.coast_segments
-        values to expect:
-        coasts ids
+        values to expect: coasts ids
+
+        Args:
+            transect_geom ([type]): LineString format
+            crs (int, optional): [description]. Defaults to 4326.
+            dist (int, optional): [description]. Defaults to 10000.
+
+        Returns:
+            [type]: [description]
         """
-        transect = f"ST_GeomFromText('{wkt}', {crs})"
-
-        A = f"ST_StartPoint({transect})"
-        B = f"ST_EndPoint({transect})"
-        azimuth = f"ST_Azimuth({B}::geometry,{A}::geometry)"
-        extension_length = transect_length + dist
-        projection = f"ST_Project({A}, {extension_length}, {azimuth})"
-
-        # It should be returned in LineString format
-        extended_line = f"ST_MakeLine({B}::geometry, {projection}::geometry)"
-
+        # extend line for searching for closest coasts
         query = f"""SELECT gid
                 FROM coast.osm_coastline
-                WHERE ST_Intersects(geom, {extended_line})"""
+                WHERE ST_Intersects(geom, {transect_geom})"""
         cursor = self.connection.cursor()
         cursor.execute(query)
         coast_lines = cursor.fetchall()
@@ -319,7 +313,6 @@ class DB:
         cursor = self.connection.cursor()
         cursor.execute(query)
         classes = cursor.fetchone()
-        print("query returned", classes)
         cursor.close()
         return classes
 
@@ -359,7 +352,7 @@ class DB:
         cursor.close()
         return point_inland
 
-    def create_transect(self, wkt, crs=4326):
+    def create_transect_to_coast(self, wkt, crs=4326):
         """coast.osm_landpolygon
         Args:
             wkt: str
@@ -369,7 +362,7 @@ class DB:
         Returns:
             line: GeoJson
         """
-        query = f"""SELECT ST_AsGeoJson(ST_MakeLine(
+        query = f"""SELECT ST_AsText(ST_MakeLine(
                            ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs})),
                                            ST_GeomFromText(\'{wkt}\', {crs})))
                     FROM (SELECT geom
@@ -382,3 +375,50 @@ class DB:
         transect = cursor.fetchone()[0]
         cursor.close()
         return transect
+
+    def ST_line_extend(self, wkt, transect_length, dist, crs=4326, direction=-180):
+        """Extends the transect based on a given length, to either 180 or -180 direction
+        NOTE: If possible to create function in the postgres based on this query
+        Args:
+            wkt ([type]): [description]
+            transect_length ([type]): [description]
+            dist ([type]): [description]
+            crs (int, optional): [description]. Defaults to 4326.
+            direction (int, optional): [description]. Defaults to -180.
+
+        Returns:
+            [type]: [description]
+        """
+        transect = f"ST_GeomFromText('{wkt}', {crs})"
+        if direction == -180:
+            P1 = f"ST_EndPoint({transect})"
+            P2 = f"ST_StartPoint({transect})"
+            azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
+
+            extension_length = transect_length + dist
+            projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
+
+            # It should be returned in LineString format
+            query = (
+                f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
+            )
+
+        elif direction == 180:
+            P1 = f"ST_StartPoint({transect})"
+            P2 = f"ST_EndPoint({transect})"
+            azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
+            extension_length = transect_length + dist
+            projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
+            print("transect_length", transect_length)
+            print("dist", dist)
+            print("extension_length", extension_length)
+            # It should be returned in LineString format
+            query = (
+                f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
+            )
+
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        line = cursor.fetchone()[0]
+        cursor.close()
+        return line
