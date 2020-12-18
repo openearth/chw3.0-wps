@@ -29,7 +29,7 @@
 from .utils import read_config
 import psycopg2
 from typing import List
-
+import logging
 
 # host, user, password, db, port, _, _, _ = read_config()
 # connection = psycopg2.connect(user=user, password=password, host=host, database=db)
@@ -61,10 +61,9 @@ class DB:
         """
 
         query = f"""SELECT xx 
-                FROM geollayout.glim 
+                FROM geollayout.glim
                 WHERE ST_Intersects(shape, ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
                 """
-        # geology_values = fetch_all(query)
         cursor = self.connection.cursor()
         cursor.execute(query)
         geology_values = cursor.fetchall()
@@ -181,7 +180,7 @@ class DB:
         cursor.close()
         return wave_exposure
 
-    def get_tidal_range_values(self, wkt, crs=4326, dist=100000):
+    def get_tidal_range_values(self, wkt, crs=4326, dist=1):
         """ocean.tidal_range
         values to expect:
         micro
@@ -192,10 +191,10 @@ class DB:
 
         query = f"""SELECT exposure
                     FROM ocean.tidal_range 
-                    WHERE ST_DWithin(geom::geography, 
-                        ST_GeomFromText(\'{wkt}\', {crs})::geography, {dist}) 
-                    ORDER BY ST_Distance(geom::geography, 
-                                        ST_GeomFromText(\'{wkt}\', {crs})::geography) 
+                    WHERE ST_DWithin(geom, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(geom, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
         cursor.execute(query)
@@ -203,7 +202,7 @@ class DB:
         cursor.close()
         return tidal_range
 
-    def get_sediment_changerate_values(self, wkt, crs=4326, dist=100000):
+    def get_sediment_changerate_values(self, wkt, crs=4326, dist=1):
         """coast.sediment
         values to expect:
         float
@@ -211,17 +210,17 @@ class DB:
 
         query = f"""SELECT changerate
                     FROM coast.sediment 
-                    WHERE ST_DWithin(geom::geography, 
-                        ST_GeomFromText(\'{wkt}\', {crs})::geography, {dist}) 
-                    ORDER BY ST_Distance(geom::geography, 
-                                        ST_GeomFromText(\'{wkt}\', {crs})::geography) 
+                    WHERE ST_DWithin(geom, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(geom, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
         cursor.execute(query)
         change_rate = cursor.fetchone()[0]
         return change_rate
 
-    def get_shorelinechange_values(self, wkt, crs=4326, dist=100000):
+    def get_shorelinechange_values(self, wkt, crs=4326, dist=1):
         """coast.shorelinechange
         values to expect:
         float
@@ -229,10 +228,10 @@ class DB:
 
         query = f"""SELECT change
                     FROM coast.shorelinechange 
-                    WHERE ST_DWithin(geom::geography, 
-                        ST_GeomFromText(\'{wkt}\', {crs})::geography, {dist}) 
-                    ORDER BY ST_Distance(geom::geography, 
-                                        ST_GeomFromText(\'{wkt}\', {crs})::geography) 
+                    WHERE ST_DWithin(geom, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(geom, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
         cursor.execute(query)
@@ -240,7 +239,7 @@ class DB:
         cursor.close()
         return change
 
-    def get_cyclone_risk(self, wkt, crs=4326, dist=100000):
+    def get_cyclone_risk(self, wkt, crs=4326, dist=1):
         """ocean.shorelinechange
         values to expect:
         Yes
@@ -249,10 +248,10 @@ class DB:
 
         query = f"""SELECT bcyclone
                     FROM ocean.diva_points_with_cyclone_risk 
-                    WHERE ST_DWithin(geom::geography, 
-                        ST_GeomFromText(\'{wkt}\', {crs})::geography, {dist}) 
-                    ORDER BY ST_Distance(geom::geography, 
-                                        ST_GeomFromText(\'{wkt}\', {crs})::geography) 
+                    WHERE ST_DWithin(geom, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(geom, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
         cursor.execute(query)
@@ -260,10 +259,7 @@ class DB:
         cursor.close()
         return cyclone_risk
 
-    def fetch_closest_coasts(
-        self,
-        transect_geom,
-    ):
+    def fetch_closest_coasts(self, wkt, crs=4326):
         """coast.coast_segments
         values to expect: coasts ids
 
@@ -278,7 +274,7 @@ class DB:
         # extend line for searching for closest coasts
         query = f"""SELECT gid
                 FROM coast.osm_coastline
-                WHERE ST_Intersects(geom, {transect_geom})"""
+                WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))"""  # LINESTRING wkt
         cursor = self.connection.cursor()
         cursor.execute(query)
         coast_lines = cursor.fetchall()
@@ -294,7 +290,7 @@ class DB:
         sediment_balance: str,
         storm_climate: str,
     ):
-        print(
+        logging.info(
             f"""geological_layout:{geological_layout}
             wave_exposure: {wave_exposure}
             tidal_range: {tidal_range}
@@ -376,7 +372,9 @@ class DB:
         cursor.close()
         return transect
 
-    def ST_line_extend(self, wkt, transect_length, dist, crs=4326, direction=-180):
+    def ST_line_extend(
+        self, wkt, transect_length=0, P=False, dist=0, crs=4326, direction=-180
+    ):
         """Extends the transect based on a given length, to either 180 or -180 direction
         NOTE: If possible to create function in the postgres based on this query
         Args:
@@ -391,14 +389,16 @@ class DB:
         """
         transect = f"ST_GeomFromText('{wkt}', {crs})"
         if direction == -180:
+
             P1 = f"ST_EndPoint({transect})"
             P2 = f"ST_StartPoint({transect})"
             azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
+            if P:
+                P1 = f"ST_GeomFromText('{P}', {crs})"
 
             extension_length = transect_length + dist
             projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
 
-            # It should be returned in LineString format
             query = (
                 f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
             )
@@ -407,12 +407,13 @@ class DB:
             P1 = f"ST_StartPoint({transect})"
             P2 = f"ST_EndPoint({transect})"
             azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
+
+            if P:
+                P1 = f"ST_GeomFromText('{P}', {crs})"
+
             extension_length = transect_length + dist
             projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
-            print("transect_length", transect_length)
-            print("dist", dist)
-            print("extension_length", extension_length)
-            # It should be returned in LineString format
+
             query = (
                 f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
             )
@@ -422,3 +423,17 @@ class DB:
         line = cursor.fetchone()[0]
         cursor.close()
         return line
+
+    # wkt = transect
+    def point_on_coast(self, wkt, crs=4326):
+
+        query = f"""SELECT ST_AsText(ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs})))
+                    FROM(
+                        SELECT geom 
+                        FROM coast.osm_coastline
+                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line;"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        point = cursor.fetchone()[0]
+        cursor.close()
+        return point
