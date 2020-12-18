@@ -41,7 +41,14 @@ from pathlib import Path
 from typing import Any, List
 import numpy as np
 from .db_utils import DB
+import time
 
+""" t0 = time.time()
+
+t1 = time.time()
+
+total = t1-t0
+print(f"total:{total}") """
 
 from .raster_utils import (
     calc_slope,
@@ -54,10 +61,6 @@ from .utils import create_temp_dir, read_config
 from .vector_utils import change_coords, geojson_to_wkt, get_bounds
 
 service_path = Path(__file__).resolve().parent
-output_dir = create_temp_dir(service_path / "outputs")
-dem = Path(output_dir) / "dem.tif"
-dem_reprojected = Path(output_dir) / "dem_reprojected.tif"
-globcover = Path(output_dir) / "globcover.tif"
 host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
 
 
@@ -72,11 +75,11 @@ class CHW:
         self.sediment_balance = "Balance/Deficit"
         self.storm_climate = "Any"
 
-        self.ecosystem_disruption = 1
-        self.gradual_inundation = 1
-        self.salt_water_intrusion = 1
-        self.erosion = 1
-        self.flooding = 1
+        # TMP-DEM-GLOBCOVER
+        self.tmp = create_temp_dir(service_path / "outputs")
+        self.dem = Path(self.tmp) / "dem.tif"
+        self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
+        self.globcover = Path(self.tmp) / "globcover.tif"
 
         self.transect_wkt = geojson_to_wkt(self.transect)
         self.bbox = get_bounds(self.transect)
@@ -94,14 +97,16 @@ class CHW:
             self.transect_wkt, self.transect_length, dist=20000, direction=180
         )
 
+        self.bbox_20km = get_bounds(self.transect20km)
+
         # get dem
-        cut_wcs(*self.bbox, dem_layer, owsurl, dem)
+        cut_wcs(*self.bbox_20km, dem_layer, owsurl, self.dem)
         # TODO elevations for 20kmfor bariers
         self.elevations, self.segments = get_elevation_profile(
-            dem=dem,
+            dem=self.dem,
             line=change_coords(self.transect20km),
             line_length=change_coords(self.transect20km).length,
-            outfname=dem_reprojected,
+            outfname=self.dem_3857,
         )
 
         self.slope = round(
@@ -113,12 +118,11 @@ class CHW:
     def get_info_geological_layout(self):
         if self.check_barrier():
             self.geological_layout = "Barrier"
-        # Extra check the slope for Delta low estuaries
+
         elif self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
         elif self.db.intersect_with_corals(self.transect_wkt):
-            # TODO coral islands check
             self.geological_layout = "Coral island"
 
         """else:#NOTE the geological layout table does not exist: Ask Joost
@@ -127,7 +131,7 @@ class CHW:
     # 2nd level check
     def get_info_wave_exposure(self):
         self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
-        print(f"wave_exposure that I get from db {self.wave_exposure}")
+        # print(f"wave_exposure that I get from db {self.wave_exposure}")
         # TODO: comment the fetch cause bug
         """if self.wave_exposure == "moderately exposed":
             closest_coasts = self.db.fetch_closest_coasts(
@@ -256,7 +260,10 @@ class CHW:
 
     def check_barrier(self) -> bool:
         sea_pattern = detect_sea_patterns(self.elevations)
+        print(f"elevations:{self.elevations}")
+        print(f"sea patter{sea_pattern}")
         land_sea_changes = np.argwhere(sea_pattern == True)
+        print(f"land_sea_changes{land_sea_changes}")
         if land_sea_changes.shape[0] > 1:
             barrier = True
         else:
@@ -264,8 +271,8 @@ class CHW:
         return barrier
 
     def get_vegetation(self):
-        cut_wcs(*self.bbox, landuse_layer, owsurl, globcover)
-        values = read_raster_values(globcover)
+        cut_wcs(*self.bbox, landuse_layer, owsurl, self.globcover)
+        values = read_raster_values(self.globcover)
         non_vegetated = np.count_nonzero(np.logical_and(values >= 190, values <= 220))
         vegetated = np.count_nonzero(np.logical_and(values >= 20, values <= 150))
         if vegetated >= non_vegetated:
