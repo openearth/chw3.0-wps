@@ -109,11 +109,11 @@ class WpsCreateTransect(Process):
 
                 # NOTE -180 as the first point is the point on the coast
                 transect_extension = db.ST_line_extend(
-                    transect, length, dist=1000, direction=-180
+                    wkt=transect, transect_length=length, dist=1000, direction=-180
                 )
 
                 transect_geometry = wkt_geometry(transect_extension)
-                print(transect_geometry)
+
                 output = {"transect_coordinates": transect_geometry["coordinates"]}
                 response.outputs["output_json"].data = json.dumps(output)
         except Exception:
