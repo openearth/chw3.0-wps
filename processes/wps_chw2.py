@@ -31,8 +31,7 @@
 # PyWPS
 
 # http://localhost:5000/wps?request=GetCapabilities&service=WPS&version=1.0.0
-# http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw_transect
-# http://localhost:5000/wps?request=Execute&service=WPS&identifier=chw_transect&version=1.0.0&datainputs=wktline=LINESTRING(-76.254%209.325,-75.876%209.041)
+# http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw2_risk_classification
 
 from pywps import Process, Format
 from pywps.inout.inputs import ComplexInput, LiteralInput
@@ -47,8 +46,6 @@ from pathlib import Path
 
 from .chw_utils import CHW
 from .utils import write_output
-
-logging.basicConfig(level=logging.INFO)
 
 
 class WpsChw20(Process):
@@ -109,7 +106,7 @@ class WpsChw20(Process):
         try:
             # 1st level check
             chw.get_info_geological_layout()
-            logging.INFO(f"geological_layout:{chw.geological_layout}")
+
         except Exception:
             msg = "Failed to get information for geological layout"
             res = {"errMsg": msg}
@@ -117,15 +114,15 @@ class WpsChw20(Process):
         try:
             # 2nd level check
             chw.get_info_wave_exposure()
-            logging.INFO(f"wave_exposure:{chw.wave_exposure}")
+
         except Exception:
             msg = "Failed to get information for wave exposure"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
         try:
             # 3rd level check
-            chw.get_info_tida_range()
-            logging.INFO(f"tidal_range:{chw.tidal_range}")
+            chw.get_info_tidal_range()
+
         except Exception:
             msg = "Failed to get information tidal range"
             res = {"errMsg": msg}
@@ -133,7 +130,7 @@ class WpsChw20(Process):
         try:
             # 4th level check
             chw.get_info_flora_fauna()
-            logging.INFO(f"flora_fauna:{chw.flora_fauna}")
+
         except Exception:
             msg = "Failed to get information for flora fauna"
             res = {"errMsg": msg}
@@ -141,7 +138,7 @@ class WpsChw20(Process):
         try:
             # 5th level check
             chw.get_info_sediment_balance()
-            logging.INFO(f"sediment_balance:{chw.sediment_balance}")
+
         except Exception:
             msg = "Failed to get information for sediment balance"
             res = {"errMsg": msg}
@@ -149,7 +146,7 @@ class WpsChw20(Process):
         try:
             # 6th level check
             chw.get_info_storm_climate()
-            logging.INFO(f"storm_climate:{chw.storm_climate}")
+
         except Exception:
             msg = "Failed to get information for storm climate"
             res = {"errMsg": msg}
@@ -157,6 +154,7 @@ class WpsChw20(Process):
         try:
             # classify hazards according to coastalhazardwheel decision tree
             chw.hazards_classification()
+
         except Exception:
             msg = "Something went wrong during the classification"
             res = {"errMsg": msg}
@@ -164,9 +162,17 @@ class WpsChw20(Process):
         try:
             # get measures
             chw.provide_measures()
+
+        except Exception:
+            msg = "Failed to provide measures"
+            res = {"errMsg": msg}
+            response.outputs["output_json"].data = json.dumps(res)
+        try:
+
             output = write_output(chw)
             response.outputs["output_json"].data = json.dumps(output)
+
         except Exception:
-            msg = "Failde to provide measures"
+            msg = "Failed to write the output"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)

@@ -122,56 +122,63 @@ def calc_slope(
     elevations,
     segments,
 ):
-    # Replace nan with 0
-    y = np.array(elevations)
-    y = np.nan_to_num(y)
+    try:
+        # Replace nan with 0
+        y = np.array(elevations)
+        y = np.nan_to_num(y)
 
-    x = np.array(segments)
+        x = np.array(segments)
+        inland800 = (np.argwhere(x < 900).shape)[0]
 
-    # slope of every segment
-    m = np.diff(y) / np.diff(x)
+        x = x[:inland800]
+        y = y[:inland800]
+        logging.info("y", y)
+        # slope of every segment
+        m = np.diff(y) / np.diff(x)
 
-    # detect change of slope (negative to positive and reverse)
-    msign = np.sign(m)
-    slope_patterns = np.array(
-        [
-            any(pattern)
-            for pattern in zip(
-                detect_pattern([0, 1], msign),
-                detect_pattern([1, -1], msign),
-                detect_pattern([-1, 1], msign),
-                detect_pattern([-1, 0], msign),
-                detect_pattern([1, 0], msign),
-            )
-        ]
-    )
+        # detect change of slope (negative to positive and reverse)
+        msign = np.sign(m)
+        slope_patterns = np.array(
+            [
+                any(pattern)
+                for pattern in zip(
+                    detect_pattern([0, 1], msign),
+                    detect_pattern([1, -1], msign),
+                    detect_pattern([-1, 1], msign),
+                    detect_pattern([-1, 0], msign),
+                    detect_pattern([1, 0], msign),
+                )
+            ]
+        )
 
-    indeces = np.where(slope_patterns == True)[0] + 2
-    slopes = []
-    indeces_start = indeces - 1
-    loops = len(indeces) + 1
-    indeces_end = indeces
+        indeces = np.where(slope_patterns == True)[0] + 2
+        slopes = []
+        indeces_start = indeces - 1
+        loops = len(indeces) + 1
+        indeces_end = indeces
 
-    for i in range(loops):
-        if i == 0:
-            elevations = y[: indeces_end[i]]
-            distances = x[: indeces_end[i]]
-            a = linregress(distances, elevations)
-            slopes.append(a.slope)
-        elif i == len(indeces):
-            elevations = y[indeces_start[i - 1] :]
-            distances = x[indeces_start[i - 1] :]
-            a = linregress(distances, elevations)
-            slopes.append(a.slope)
-        else:
-            elevations = y[indeces_start[i - 1] : indeces_end[i]]
-            distances = x[indeces_start[i - 1] : indeces_end[i]]
-            a = linregress(distances, elevations)
-            slopes.append(a.slope)
+        for i in range(loops):
+            if i == 0:
+                elevations = y[: indeces_end[i]]
+                distances = x[: indeces_end[i]]
+                a = linregress(distances, elevations)
+                slopes.append(a.slope)
+            elif i == len(indeces):
+                elevations = y[indeces_start[i - 1] :]
+                distances = x[indeces_start[i - 1] :]
+                a = linregress(distances, elevations)
+                slopes.append(a.slope)
+            else:
+                elevations = y[indeces_start[i - 1] : indeces_end[i]]
+                distances = x[indeces_start[i - 1] : indeces_end[i]]
+                a = linregress(distances, elevations)
+                slopes.append(a.slope)
 
-    slopes = [abs(slope * 100) for slope in slopes]
-    # median_slope = statistics.median(slopes)
-    max_slope = max(slopes)
+        slopes = [abs(slope * 100) for slope in slopes]
+        max_slope = max(slopes)
+    except Exception:
+        logging.info("slope is 0 along the line")
+        max_slope = 0.00
     return max_slope
 
 

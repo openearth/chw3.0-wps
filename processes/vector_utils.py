@@ -36,7 +36,10 @@ from shapely import wkt
 
 
 def get_bounds(line):
-    g = shape(line.geometry)
+    if hasattr(line, "geometry"):
+        g = shape(line.geometry)
+    else:
+        g = wkt.loads(line)
     return g.bounds
 
 
