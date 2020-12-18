@@ -427,11 +427,23 @@ class DB:
     # wkt = transect
     def point_on_coast(self, wkt, crs=4326):
 
-        query = f"""SELECT ST_AsText(ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs})))
-                    FROM(
-                        SELECT geom 
+        query = f"""SELECT ST_AsText(ST_ClosestPoint(st_intersection, ST_GeomFromText(\'{wkt}\', {crs})))
+
+                    FROM (SELECT ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                        FROM(
+                        SELECT geom
                         FROM coast.osm_coastline
-                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line;"""
+                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line) as poi;
+                        
+                    SELECT ST_AsText(ST_ClosestPoint(st_intersection, ST_GeomFromText(\'{wkt}\', {crs})))
+
+                    FROM (SELECT ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                        FROM(
+                        SELECT geom
+                        FROM coast.osm_coastline
+                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line) as poi;
+                    """
+
         cursor = self.connection.cursor()
         cursor.execute(query)
         point = cursor.fetchone()[0]
