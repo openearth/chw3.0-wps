@@ -43,12 +43,6 @@ import numpy as np
 from .db_utils import DB
 import time
 
-""" t0 = time.time()
-
-t1 = time.time()
-
-total = t1-t0
-print(f"total:{total}") """
 
 from .raster_utils import (
     calc_slope,
@@ -82,26 +76,27 @@ class CHW:
         self.globcover = Path(self.tmp) / "globcover.tif"
 
         self.transect_wkt = geojson_to_wkt(self.transect)
+        self.point_on_coast = self.db.point_on_coast(self.transect_wkt)
         self.bbox = get_bounds(self.transect)
 
         self.transect_length = change_coords(self.transect).length
 
         # in wkt format as returned from database
         self.transect10km = self.db.ST_line_extend(
-            self.transect_wkt, self.transect_length, dist=10000, direction=-180
+            wkt=self.transect_wkt, P=self.point_on_coast, dist=10000, direction=-180
         )
         self.transect100km = self.db.ST_line_extend(
-            self.transect_wkt, self.transect_length, dist=100000, direction=-180
+            wkt=self.transect_wkt, P=self.point_on_coast, dist=100000, direction=-180
         )
+
         self.transect20km = self.db.ST_line_extend(
-            self.transect_wkt, self.transect_length, dist=20000, direction=180
+            wkt=self.transect_wkt, P=self.point_on_coast, dist=20000, direction=180
         )
 
         self.bbox_20km = get_bounds(self.transect20km)
 
         # get dem
         cut_wcs(*self.bbox_20km, dem_layer, owsurl, self.dem)
-        # TODO elevations for 20kmfor bariers
         self.elevations, self.segments = get_elevation_profile(
             dem=self.dem,
             line=change_coords(self.transect20km),
@@ -109,10 +104,7 @@ class CHW:
             outfname=self.dem_3857,
         )
 
-        self.slope = round(
-            calc_slope(self.elevations, self.segments), 3
-        )  # TODO calc_slope will take the elevation and profiles and
-        # will get only the segments till 800 meters
+        self.slope = round(calc_slope(self.elevations, self.segments), 3)
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -125,38 +117,48 @@ class CHW:
         elif self.db.intersect_with_corals(self.transect_wkt):
             self.geological_layout = "Coral island"
 
-        """else:#NOTE the geological layout table does not exist: Ask Joost
-            self.geological_layout = self.check_geology_type()"""
+        else:
+            self.geological_layout = self.check_geology_type()
 
     # 2nd level check
     def get_info_wave_exposure(self):
+        """Retrieves the wave exposure values from the database.
+
+        If exposed it is possible to drop either to moderately exposed
+        (<100 km closest coastline that proects it)
+        or to protected (<10 km closest coastline that protects it).
+        If moderately exposed it can drop to protected(<10 km closest coastline that protects it)
+        """
         self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
-        # print(f"wave_exposure that I get from db {self.wave_exposure}")
-        # TODO: comment the fetch cause bug
-        """if self.wave_exposure == "moderately exposed":
-            closest_coasts = self.db.fetch_closest_coasts(
-                self.transect_wkt, self.transect_length
-            )
-            if len(closest_coasts) > 1:
+
+        if self.wave_exposure == "moderately exposed":
+            closest_coasts = self.db.fetch_closest_coasts(self.transect10km)
+            if len(closest_coasts) > 0:
                 self.wave_exposure = "Protected"
         elif self.wave_exposure == "exposed":
-            closest_coasts = self.db.fetch_closest_coasts(
-                self.transect_wkt, self.transect_length
-            )
-            if len(closest_coasts) > 1:
-                self.wave_exposure = "moderately exposed"""
+            closest_coasts = self.db.fetch_closest_coasts(self.transect100km)
+            if len(closest_coasts) > 0:
+                self.wave_exposure = "moderately exposed"
+            closest_coasts = self.db.fetch_closest_coasts(self.transect10km)
+            if len(closest_coasts) > 0:
+                self.wave_exposure = "Protected"
 
     # 3rd level check
-    def get_info_tida_range(self):
+    def get_info_tidal_range(self):
         self.tidal_range = self.db.get_tidal_range_values(self.transect_wkt)
 
     # 4th level check
     def get_info_flora_fauna(self):
-        # special case
+        # special cases
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
-        elif self.geological_layout in {"Sloping hard rock", "Flat hard rock"}:
-            if self.db.intersect_with_corals(self.transect_wkt):
+        elif self.geological_layout in {
+            "Sloping hard rock",
+            "Flat hard rock",
+            "Corals",
+        }:
+            # corals check intersection with transect 10 km -180 (close to the coast)
+            if self.db.intersect_with_corals(self.transect10km):
                 self.flora_fauna = "Corals"
             elif self.db.intersect_with_mangroves(
                 self.transect_wkt
@@ -193,36 +195,54 @@ class CHW:
 
     def hazards_classification(self):
 
-        (
-            self.code,
-            self.ecosystem_disruption,
-            self.gradual_inundation,
-            self.salt_water_intrusion,
-            self.erosion,
-            self.flooding,
-        ) = self.db.get_classes(
-            self.geological_layout,
-            self.wave_exposure,
-            self.tidal_range,
-            self.flora_fauna,
-            self.sediment_balance,
-            self.storm_climate,
-        )
+        try:
+
+            (
+                self.code,
+                self.ecosystem_disruption,
+                self.gradual_inundation,
+                self.salt_water_intrusion,
+                self.erosion,
+                self.flooding,
+            ) = self.db.get_classes(
+                self.geological_layout,
+                self.wave_exposure,
+                self.tidal_range,
+                self.flora_fauna,
+                self.sediment_balance,
+                self.storm_climate,
+            )
+        except Exception:
+
+            self.code = "None"
+            self.ecosystem_disruption = "None"
+            self.gradual_inundation = "None"
+            self.salt_water_intrusion = "None"
+            self.erosion = "None"
+            self.flooding = "None"
 
     def provide_measures(self):
 
         measures = {}
-        for row in self.db.get_measures(self.code):
-            measures.update(
-                {
-                    row[0]: row[1],
-                }
-            )
-        self.ecosystem_disruption_measures = measures["Ecosystem disruption"]
-        self.gradual_inundation_measures = measures["Gradual inundation"]
-        self.salt_water_intrusion_measures = measures["Salt water intrusion"]
-        self.erosion_measures = measures["Erosion"]
-        self.flooding_measures = measures["Flooding"]
+        try:
+            for row in self.db.get_measures(self.code):
+                measures.update(
+                    {
+                        row[0]: row[1],
+                    }
+                )
+
+            self.ecosystem_disruption_measures = measures["Ecosystem disruption"]
+            self.gradual_inundation_measures = measures["Gradual inundation"]
+            self.salt_water_intrusion_measures = measures["Salt water intrusion"]
+            self.erosion_measures = measures["Erosion"]
+            self.flooding_measures = measures["Flooding"]
+        except Exception:
+            self.ecosystem_disruption_measures = ["No measures were found"]
+            self.gradual_inundation_measures = ["No measures were found"]
+            self.salt_water_intrusion_measures = ["No measures were found"]
+            self.erosion_measures = ["No measures were found"]
+            self.flooding_measures = ["No measures were found"]
 
     def check_geology_type(self) -> str:
         """
@@ -260,10 +280,8 @@ class CHW:
 
     def check_barrier(self) -> bool:
         sea_pattern = detect_sea_patterns(self.elevations)
-        print(f"elevations:{self.elevations}")
-        print(f"sea patter{sea_pattern}")
         land_sea_changes = np.argwhere(sea_pattern == True)
-        print(f"land_sea_changes{land_sea_changes}")
+
         if land_sea_changes.shape[0] > 1:
             barrier = True
         else:
