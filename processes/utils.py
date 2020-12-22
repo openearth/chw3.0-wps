@@ -103,10 +103,10 @@ def write_output(chw):
                 {
                     "title": "Risk",
                     "info": {
-                        "Distance to measurement point": "Sample",
-                        "Population": "Sample",
-                        "Capital stock at closest GAR point": "Sample",
-                        "Key roads within 100m of the coast": "Sample",
+                        "Distance to measurement point": "No data",
+                        "Population": chw.population,
+                        "Capital stock at closest GAR point": chw.gar,
+                        "Key roads within 100m of the coast": "No data",
                     },
                 }
             ],
