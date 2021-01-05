@@ -149,6 +149,18 @@ class CHW:
 
     # 4th level check
     def get_info_flora_fauna(self):
+        """
+        Retrieve information from various layers:
+            - detect mangroves
+            - detect corals (coral reefs)
+            - salt marshes
+            - overal vegetation presence
+
+        Returns
+        -------
+        None.
+
+        """
         # special cases
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
@@ -279,6 +291,14 @@ class CHW:
             return "Sloping hard rock"
 
     def check_barrier(self) -> bool:
+        """
+        Returns
+        -------
+        bool
+            DESCRIPTION. 
+            The pattern that is used here detects no-data - data from the elevation dataset(MERIT-Coast) over a transect of 20 km.
+            If this pattern is detected then it is classified as barrier.
+        """
         sea_pattern = detect_sea_patterns(self.elevations)
         land_sea_changes = np.argwhere(sea_pattern == True)
 
