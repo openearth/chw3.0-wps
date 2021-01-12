@@ -306,6 +306,7 @@ class DB:
                         '{flora_fauna}' = ANY(flora_fauna) and
                         '{sediment_balance}' = ANY(sediment_balance) and
                         '{storm_climate}' = ANY(storm_climate);"""
+        
         cursor = self.connection.cursor()
         cursor.execute(query)
         classes = cursor.fetchone()
@@ -449,3 +450,43 @@ class DB:
         point = cursor.fetchone()[0]
         cursor.close()
         return point
+
+    def get_gar_pop_values(self, wkt, crs=4326, dist=1):
+        """gar.gar
+        values to expect from database:
+            number
+        """
+
+        query = f"""SELECT tot_val,tot_pob
+                    FROM gar.gar 
+                    WHERE ST_DWithin(wkb_geometry, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(wkb_geometry, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
+                    LIMIT 1;"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        tot = cursor.fetchone()
+        gar = float(tot[0])
+        pop = float(tot[1])
+        cursor.close()
+        print(gar, pop)
+        return gar, pop
+
+    def get_beach_value(self, wkt, crs=4326, dist=1):
+        """coast.shorelinechange
+        values to expect from database:
+            boolean
+        """
+        query = f"""SELECT flag_sandy
+                    FROM coast.shorelinechange 
+                    WHERE ST_DWithin(geom, 
+                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
+                    ORDER BY ST_Distance(geom, 
+                                        ST_GeomFromText(\'{wkt}\', {crs})) 
+                    LIMIT 1;"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        beach = cursor.fetchone()[0]
+        cursor.close()
+        return beach

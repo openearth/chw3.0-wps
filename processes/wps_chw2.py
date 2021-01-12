@@ -46,6 +46,7 @@ from pathlib import Path
 
 from .chw_utils import CHW
 from .utils import write_output
+import time
 
 
 class WpsChw20(Process):
@@ -86,89 +87,45 @@ class WpsChw20(Process):
 
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
+        try:
 
-        try:
-            # Read input
             line_str = request.inputs["transect"][0].data
-            # load geojson
             line_geojson = geojson.loads(line_str)
-        except Exception:
-            msg = "Failed to read the input"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
-            # Initiate chw object
+
             chw = CHW(line_geojson)
-        except Exception:
-            msg = "Failed to initiate the CHW"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
+
             # 1st level check
             chw.get_info_geological_layout()
-
-        except Exception:
-            msg = "Failed to get information for geological layout"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
             # 2nd level check
             chw.get_info_wave_exposure()
-
-        except Exception:
-            msg = "Failed to get information for wave exposure"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
             # 3rd level check
             chw.get_info_tidal_range()
-
-        except Exception:
-            msg = "Failed to get information tidal range"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
             # 4th level check
             chw.get_info_flora_fauna()
-
-        except Exception:
-            msg = "Failed to get information for flora fauna"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
             # 5th level check
             chw.get_info_sediment_balance()
-
-        except Exception:
-            msg = "Failed to get information for sediment balance"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
-        try:
             # 6th level check
             chw.get_info_storm_climate()
 
         except Exception:
-            msg = "Failed to get information for storm climate"
+            msg = "Failed during retrieving the information"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
+
         try:
+
             # classify hazards according to coastalhazardwheel decision tree
             chw.hazards_classification()
-
+            # get measures
+            chw.provide_measures()
+            # get risk information for the transect
+            chw.get_risk_info()
         except Exception:
             msg = "Something went wrong during the classification"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
-        try:
-            # get measures
-            chw.provide_measures()
 
-        except Exception:
-            msg = "Failed to provide measures"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
         try:
-
             output = write_output(chw)
             response.outputs["output_json"].data = json.dumps(output)
 

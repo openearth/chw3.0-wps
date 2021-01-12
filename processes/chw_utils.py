@@ -61,6 +61,7 @@ host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
 class CHW:
     def __init__(self, transect):
         self.transect = transect
+
         self.db = DB(user, password, host, db)
         self.geological_layout = "Any"
         self.wave_exposure = "Any"
@@ -96,7 +97,9 @@ class CHW:
         self.bbox_20km = get_bounds(self.transect20km)
 
         # get dem
+
         cut_wcs(*self.bbox_20km, dem_layer, owsurl, self.dem)
+
         self.elevations, self.segments = get_elevation_profile(
             dem=self.dem,
             line=change_coords(self.transect20km),
@@ -193,8 +196,16 @@ class CHW:
 
     # 5th level check
     def get_info_sediment_balance(self):
+
         if self.geological_layout in {"Flat hard rock", "Sloping hard rock"}:
-            self.sediment_balance = "Beach"
+            try:
+                beach = self.db.get_beach_value(self.transect_wkt)
+                if beach == "true":
+                    self.sediment_balance = "Beach"
+                else:
+                    self.sediment_balance = "No Beach"
+            except Exception:
+                self.sediment_balance = "Beach"
         elif (
             self.db.get_shorelinechange_values(self.transect_wkt) != "Low"
             and self.db.get_sediment_changerate_values(self.transect_wkt) > 0
@@ -225,7 +236,6 @@ class CHW:
                 self.storm_climate,
             )
         except Exception:
-
             self.code = "None"
             self.ecosystem_disruption = "None"
             self.gradual_inundation = "None"
@@ -255,6 +265,12 @@ class CHW:
             self.salt_water_intrusion_measures = ["No measures were found"]
             self.erosion_measures = ["No measures were found"]
             self.flooding_measures = ["No measures were found"]
+
+    def get_risk_info(self):
+        try:
+            self.gar, self.population = self.db.get_gar_pop_values(self.transect_wkt)
+        except Exception:
+            self.gar, self.population = "No data", "No data"
 
     def check_geology_type(self) -> str:
         """

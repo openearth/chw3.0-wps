@@ -34,6 +34,7 @@ import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from scipy.stats import linregress
 import statistics
+import time
 
 
 def cut_wcs(
@@ -122,6 +123,7 @@ def calc_slope(
     elevations,
     segments,
 ):
+
     try:
         # Replace nan with 0
         y = np.array(elevations)
@@ -179,6 +181,7 @@ def calc_slope(
     except Exception:
         logging.info("slope is 0 along the line")
         max_slope = 0.00
+
     return max_slope
 
 
