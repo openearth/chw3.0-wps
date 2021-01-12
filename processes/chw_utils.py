@@ -61,6 +61,7 @@ host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
 class CHW:
     def __init__(self, transect):
         self.transect = transect
+
         self.db = DB(user, password, host, db)
         self.geological_layout = "Any"
         self.wave_exposure = "Any"
@@ -96,7 +97,9 @@ class CHW:
         self.bbox_20km = get_bounds(self.transect20km)
 
         # get dem
+
         cut_wcs(*self.bbox_20km, dem_layer, owsurl, self.dem)
+
         self.elevations, self.segments = get_elevation_profile(
             dem=self.dem,
             line=change_coords(self.transect20km),

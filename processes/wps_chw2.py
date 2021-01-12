@@ -46,6 +46,7 @@ from pathlib import Path
 
 from .chw_utils import CHW
 from .utils import write_output
+import time
 
 
 class WpsChw20(Process):
@@ -86,11 +87,11 @@ class WpsChw20(Process):
 
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
-
         try:
 
             line_str = request.inputs["transect"][0].data
             line_geojson = geojson.loads(line_str)
+
             chw = CHW(line_geojson)
 
             # 1st level check
@@ -111,12 +112,18 @@ class WpsChw20(Process):
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
 
-        # classify hazards according to coastalhazardwheel decision tree
-        chw.hazards_classification()
-        # get measures
-        chw.provide_measures()
+        try:
 
-        chw.get_risk_info()
+            # classify hazards according to coastalhazardwheel decision tree
+            chw.hazards_classification()
+            # get measures
+            chw.provide_measures()
+            # get risk information for the transect
+            chw.get_risk_info()
+        except Exception:
+            msg = "Something went wrong during the classification"
+            res = {"errMsg": msg}
+            response.outputs["output_json"].data = json.dumps(res)
 
         try:
             output = write_output(chw)
