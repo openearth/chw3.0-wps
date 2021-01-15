@@ -33,7 +33,7 @@ import numpy as np
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from scipy.stats import linregress
-import statistics
+from statistics import mean
 import time
 
 
@@ -177,12 +177,12 @@ def calc_slope(
                 slopes.append(a.slope)
 
         slopes = [abs(slope * 100) for slope in slopes]
-        max_slope = max(slopes)
+        mean_slope = mean(slopes)
     except Exception:
         logging.info("slope is 0 along the line")
-        max_slope = 0.00
+        mean_slope = 0.00
 
-    return max_slope
+    return mean_slope
 
 
 def detect_sea_patterns(elevations):

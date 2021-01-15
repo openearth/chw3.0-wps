@@ -286,9 +286,15 @@ class CHW:
         """
 
         geology_values = self.db.get_geol_glim_values(self.transect_wkt)
+        # TODO change the name su_values to something more general. Before the code
+        # had only su values in the check
+        su_values = sum(
+            x in [("su",), ("sm",), ("ss",), ("sc",)] for x in geology_values
+        )
+        non_su_values = sum(
+            x not in [("su",), ("sm",), ("ss",), ("sc",)] for x in geology_values
+        )
 
-        non_su_values = sum(x != ("su",) for x in geology_values)
-        su_values = sum(x == ("su",) for x in geology_values)
         if su_values >= non_su_values:
             geology = "su"
         else:
@@ -311,7 +317,7 @@ class CHW:
         Returns
         -------
         bool
-            DESCRIPTION. 
+            DESCRIPTION.
             The pattern that is used here detects no-data - data from the elevation dataset(MERIT-Coast) over a transect of 20 km.
             If this pattern is detected then it is classified as barrier.
         """
