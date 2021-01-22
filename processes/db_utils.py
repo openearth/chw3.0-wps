@@ -260,13 +260,12 @@ class DB:
         return cyclone_risk
 
     def fetch_closest_coasts(self, wkt, crs=4326):
-        """coast.coast_segments
+        """coast.osm_coastline
         values to expect: coasts ids
 
         Args:
-            transect_geom ([type]): LineString format
+            wkt ([type]): [description]
             crs (int, optional): [description]. Defaults to 4326.
-            dist (int, optional): [description]. Defaults to 10000.
 
         Returns:
             [type]: [description]
@@ -306,7 +305,7 @@ class DB:
                         '{flora_fauna}' = ANY(flora_fauna) and
                         '{sediment_balance}' = ANY(sediment_balance) and
                         '{storm_climate}' = ANY(storm_climate);"""
-        
+
         cursor = self.connection.cursor()
         cursor.execute(query)
         classes = cursor.fetchone()
@@ -377,11 +376,12 @@ class DB:
         self, wkt, transect_length=0, P=False, dist=0, crs=4326, direction=-180
     ):
         """Extends the transect based on a given length, to either 180 or -180 direction
-        NOTE: If possible to create function in the postgres based on this query
+
         Args:
             wkt ([type]): [description]
-            transect_length ([type]): [description]
-            dist ([type]): [description]
+            transect_length (int, optional): [description]. Defaults to 0.
+            P (bool, optional): [description]. Defaults to False.
+            dist (int, optional): [description]. Defaults to 0.
             crs (int, optional): [description]. Defaults to 4326.
             direction (int, optional): [description]. Defaults to -180.
 
