@@ -94,7 +94,7 @@ def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
 # line in epsg: 3857 as shapely object
 # line_length
 # do I need an import to use the interpolate?
-def get_elevation_profile(dem, line, line_length, outfname, step=90) -> List[float]:
+def get_elevation_profile(dem, line, line_length, outfname, step=30) -> List[float]:
 
     segments = [segment for segment in range(0, int(line_length), step)]
     points = tuple(
@@ -111,6 +111,8 @@ def get_elevation_profile(dem, line, line_length, outfname, step=90) -> List[flo
     with rasterio.open(outfname) as dst:
         values = dst.sample(points, 1, True)
         elevations = [value[0] for value in values]
+        print("elevations", "segments")
+        # print(elevations, segments)
         return elevations, segments
 
 
@@ -185,10 +187,17 @@ def calc_slope(
     return mean_slope
 
 
-def detect_sea_patterns(elevations):
-    y = np.array(elevations)
-    y_nan = np.isnan(y)
-    pattern = detect_pattern([True, False], y_nan)
+def detect_sea_patterns(landuse):
+    landuse_values = read_raster_values(landuse)
+    print("land_use before pattern", landuse_values)
+    #
+    # y = np.array(elevations)
+    # y_nan = np.isnan(y)
+    landuse_values = np.where(landuse_values == 210, "sea", "land")
+    print("landuse", landuse_values)
+
+    pattern = detect_pattern(["sea", "land"], landuse_values)
+    print("pattern", pattern)
     return pattern
 
 
