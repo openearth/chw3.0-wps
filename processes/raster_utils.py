@@ -34,7 +34,7 @@ import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from scipy.stats import linregress
 from statistics import mean
-import time
+from pathlib import Path
 
 
 def cut_wcs(
@@ -93,26 +93,76 @@ def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
 
 # line in epsg: 3857 as shapely object
 # line_length
-# do I need an import to use the interpolate?
-def get_elevation_profile(dem, line, line_length, outfname, step=30) -> List[float]:
 
+
+def line_segmentation(line, line_length, step):
+    """Returns the transect in segments
+
+    Args:
+        line ([type]): [description]
+        line_length ([type]): [description]
+        step ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     segments = [segment for segment in range(0, int(line_length), step)]
+
     points = tuple(
         map(
             lambda segment: (line.interpolate(segment).x, line.interpolate(segment).y),
             segments,
         )
     )
-    # reproject raster
+    return segments, points
 
+
+def get_landuse_profile(landuse, line, line_length, temp, step=300):
+    """Returns landuse values over the transect with a step equal to the size of the raster
+
+    Args:
+        landuse
+        line
+        line_length
+        outfname
+        step (int, optional);
+
+    Returns:
+        landuse_values, segments
+    """
+    reproject_fname = Path(temp) / "landuse_3857.tif"
+    segments, points = line_segmentation(line, line_length, step)
+    reproject_raster(landuse, reproject_fname)
+
+    # sample raster
+    with rasterio.open(reproject_fname) as dst:
+        values = dst.sample(points, 1, True)
+        landuse_values = [value[0] for value in values]
+        return landuse_values, segments
+
+
+def get_elevation_profile(dem, line, line_length, outfname, step=30):
+    """Returns elevation values over the transect with a step eqaul to the size of the raster
+
+    Args:
+        dem
+        line
+        line_length
+        outfname
+        step (int, optional):
+
+    Returns:
+        elevations, segments
+    """
+
+    segments, points = line_segmentation(line, line_length, step)
+    # reproject raster
     reproject_raster(dem, outfname)
 
     # sample raster
     with rasterio.open(outfname) as dst:
         values = dst.sample(points, 1, True)
         elevations = [value[0] for value in values]
-        print("elevations", "segments")
-        # print(elevations, segments)
         return elevations, segments
 
 
@@ -187,18 +237,22 @@ def calc_slope(
     return mean_slope
 
 
-def detect_sea_patterns(landuse):
-    landuse_values = read_raster_values(landuse)
-    print("land_use before pattern", landuse_values)
-    #
-    # y = np.array(elevations)
-    # y_nan = np.isnan(y)
-    landuse_values = np.where(landuse_values == 210, "sea", "land")
-    print("landuse", landuse_values)
+def detect_sea_patterns(landuse_values):
+    # The globcover dataset is very coarse dataset (300m)
+    # We want alwasy the first point of the transect to be on the sea
+    if landuse_values[0] != 210:
+        landuse_values[0] = 210
+    print("land_use before pattern", [i for i in landuse_values])
+    landuse_array = np.array(landuse_values)
+    landuse_array = np.where(landuse_array == 210, "sea", "land")
+    # print("land_use after np where", [i for i in landuse_array])
 
-    pattern = detect_pattern(["sea", "land"], landuse_values)
-    print("pattern", pattern)
-    return pattern
+    sea_land_pattern = detect_pattern(["sea", "land"], landuse_array)
+    land_sea_pattern = detect_pattern(["land", "sea"], landuse_array)
+    print("sea_land_pattern", sea_land_pattern)
+    print("land_sea_pattern", land_sea_pattern)
+
+    return sea_land_pattern, land_sea_pattern
 
 
 def read_raster_values(file):

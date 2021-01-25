@@ -48,6 +48,7 @@ from .raster_utils import (
     calc_slope,
     cut_wcs,
     get_elevation_profile,
+    get_landuse_profile,
     detect_sea_patterns,
     read_raster_values,
 )
@@ -71,6 +72,7 @@ class CHW:
         self.storm_climate = "Any"
 
         # TMP-DEM-GLOBCOVER
+
         self.tmp = create_temp_dir(service_path / "outputs")
         self.dem = Path(self.tmp) / "dem.tif"
         self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
@@ -94,6 +96,7 @@ class CHW:
         self.transect20km = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=20000, direction=180
         )
+        print("transect20km wkt", self.transect20km)
 
         self.bbox_20km = get_bounds(self.transect20km)
 
@@ -330,30 +333,47 @@ class CHW:
             The pattern that is used here detects no-data - data from the elevation dataset(MERIT-Coast) over a transect of 20 km.
             If this pattern is detected then it is classified as barrier.
         """
+        # cut the globcover dataset with the bbox of the 20km transect extension
         globcover20km = Path(self.tmp) / "globcover_20km.tif"
         cut_wcs(*self.bbox_20km, landuse_layer, owsurl, globcover20km)
+
+        # Land use profile over the transect
+
+        landuse, _ = get_landuse_profile(
+            globcover20km,
+            line=change_coords(self.transect20km),
+            line_length=change_coords(self.transect20km).length,
+            temp=self.tmp,
+        )
+
         # Detect sea pattern: Sea, land, sea, land
-        sea_pattern = detect_sea_patterns(globcover20km)
-        print("sea_pattern", sea_pattern)
-        land_sea_changes = np.argwhere(sea_pattern == True)
-        print("land_sea_changes", land_sea_changes)
+        sea_land_pattern, land_sea_pattern = detect_sea_patterns(landuse)
+
+        # count times that the pattern is detected
+        sea_land_changes = np.argwhere(sea_land_pattern == True)
+        land_sea_changes = np.argwhere(land_sea_pattern == True)
+        first_sea_land_change = sea_land_changes[0][0]
+        first_land_sea_change = land_sea_changes[0][0]
+        print("land sea first change", land_sea_changes[0][0])
 
         # Check if unconsolitated values on the coast
         unconsol = sum(x == ("su",) for x in self.geology)
+        print("self.geology", self.geology)
+        print("unconsoli", unconsol)
         non_unconsol = sum(x != ("su",) for x in self.geology)
-        print("Detect if barrier", unconsol, non_unconsol)
+        print("non_uncon", non_unconsol)
 
-        if unconsol >= non_unconsol and land_sea_changes.shape[0] > 1:
+        if (
+            unconsol >= non_unconsol
+            and sea_land_changes.shape[0] > 1
+            and (first_land_sea_change - first_sea_land_change < 8)
+        ):
             barrier = True
         else:
             barrier = False
         return barrier
 
-    # TODO move function at raster_utils
     def get_vegetation(self):
-        # TODO I need globcover for barrier land no land patter.
-        # for now cut twice (as I need two different bboxes) cant estimate vegetation
-        # with a bbox of 20km
         cut_wcs(*self.bbox, landuse_layer, owsurl, self.globcover)
         values = read_raster_values(self.globcover)
         non_vegetated = np.count_nonzero(np.logical_and(values >= 190, values <= 220))
