@@ -88,37 +88,48 @@ class CHW:
         self.transect10km = self.db.ST_line_extend(
             wkt=self.transect_wkt, P=self.point_on_coast, dist=10000, direction=-180
         )
+
         # 100km from the point on the coast and -180 deg direction
         self.transect100km = self.db.ST_line_extend(
             wkt=self.transect_wkt, P=self.point_on_coast, dist=100000, direction=-180
         )
-        # 20 km transect = + 20km from the sea point of the given transect (180 deg direction)
-        self.transect20km = self.db.ST_line_extend(
-            wkt=self.transect_wkt, dist=20000, direction=180
+
+        self.transect_500_inland = self.db.ST_line_extend(
+            wkt=self.transect_wkt, P=self.point_on_coast, dist=500, direction=180
         )
-        print("transect20km wkt", self.transect20km)
+        print("500 m inland wkt", self.transect_500_inland)
+
+        # TODO add length of 20km.
+        # 20 km transect = + 20km from point on the coast of the given transect (180 deg direction)
+        self.transect20km = self.db.ST_line_extend(
+            wkt=self.transect_wkt,
+            transect_length=self.transect_length,
+            dist=20000,
+            direction=180,
+        )
 
         self.bbox_20km = get_bounds(self.transect20km)
 
         # get dem
-
         cut_wcs(*self.bbox_20km, dem_layer, owsurl, self.dem)
         # TODO pass the path only and or give another name to the oufname.
         # it is not an output of elevation profile but something that I use
         # in the whole process
         self.elevations, self.segments = get_elevation_profile(
             dem=self.dem,
-            line=change_coords(self.transect20km),
-            line_length=change_coords(self.transect20km).length,
+            line=change_coords(self.transect_500_inland),
+            line_length=change_coords(self.transect_500_inland).length,
             outfname=self.dem_3857,
         )
 
         self.slope = round(calc_slope(self.elevations, self.segments), 3)
 
         self.geology = self.db.get_geol_glim_values(self.transect_wkt)
+        print("self.geology", self.geology)
 
     # 1st level check
     def get_info_geological_layout(self):
+        """"""
 
         if self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
@@ -128,8 +139,6 @@ class CHW:
 
         elif self.geology != []:
             self.geological_layout = self.check_geology_type()
-        # TODO add also small islands? if yes then perhaps consider to move all this to a
-        # function
         elif (
             self.geology == []
             and self.db.intersect_with_corals(self.transect_wkt) is True
@@ -146,22 +155,22 @@ class CHW:
         If moderately exposed it can drop to protected(<10 km closest coastline that protects it)
         """
         self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
-        print("self.wave_exposure", self.wave_exposure)
+        # print("self.wave_exposure", self.wave_exposure)
 
         if self.wave_exposure == "moderately exposed":
             closest_coasts = self.db.fetch_closest_coasts(self.transect10km)
-            print("closest_coasts 10km", closest_coasts)
+            # print("closest_coasts 10km", closest_coasts)
             if len(closest_coasts) > 1:
-                self.wave_exposure = "Protected"
+                self.wave_exposure = "protected"
         elif self.wave_exposure == "exposed":
             closest_coasts = self.db.fetch_closest_coasts(self.transect100km)
-            print("closest_coasts 100km", closest_coasts)
+            # print("closest_coasts 100km", closest_coasts)
             if len(closest_coasts) > 1:
                 self.wave_exposure = "moderately exposed"
             closest_coasts = self.db.fetch_closest_coasts(self.transect10km)
-            print("closest_coasts 10km", closest_coasts)
+            # print("closest_coasts 10km", closest_coasts)
             if len(closest_coasts) > 1:
-                self.wave_exposure = "Protected"
+                self.wave_exposure = "protected"
 
     # 3rd level check
     def get_info_tidal_range(self):
@@ -216,8 +225,8 @@ class CHW:
 
         if self.geological_layout in {"Flat hard rock", "Sloping hard rock"}:
             try:
-                beach = self.db.get_beach_value(self.transect_wkt)
-                if beach == "true":
+                beach = self.db.intersect_with_osm_beaches(self.transect_wkt)
+                if beach is True:
                     self.sediment_balance = "Beach"
                 else:
                     self.sediment_balance = "No Beach"
@@ -231,7 +240,11 @@ class CHW:
 
     # 6th level check
     def get_info_storm_climate(self):
-        self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
+        # TODO try exception in order to prevent error in Norway. I have to check why this is happens.
+        try:
+            self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
+        except Exception:
+            self.storm_climate = "No"
 
     def hazards_classification(self):
 
@@ -330,15 +343,18 @@ class CHW:
         -------
         bool
             DESCRIPTION.
-            The pattern that is used here detects no-data - data from the elevation dataset(MERIT-Coast) over a transect of 20 km.
-            If this pattern is detected then it is classified as barrier.
+            The pattern that is used here detects 210 water value from the GlobCover dataset over a transect of 20 km.
+            In order to classify as barrier:
+                If unconsolidated values &&
+                If pattern sea-land is detected more than one time over the transect
+                If the land sea pattern is not detected far from the first sea land pattern (A way to prevent recognize as barriers
+                big (in widht) pieces of land)
         """
         # cut the globcover dataset with the bbox of the 20km transect extension
         globcover20km = Path(self.tmp) / "globcover_20km.tif"
         cut_wcs(*self.bbox_20km, landuse_layer, owsurl, globcover20km)
 
         # Land use profile over the transect
-
         landuse, _ = get_landuse_profile(
             globcover20km,
             line=change_coords(self.transect20km),
@@ -346,27 +362,31 @@ class CHW:
             temp=self.tmp,
         )
 
-        # Detect sea pattern: Sea, land, sea, land
+        # Detect sea pattern: Sea, land and land_sea
         sea_land_pattern, land_sea_pattern = detect_sea_patterns(landuse)
 
-        # count times that the pattern is detected
+        # find where sea-land pattern is detected
         sea_land_changes = np.argwhere(sea_land_pattern == True)
+        # find where the land-sea pattern is detected
         land_sea_changes = np.argwhere(land_sea_pattern == True)
-        first_sea_land_change = sea_land_changes[0][0]
-        first_land_sea_change = land_sea_changes[0][0]
-        print("land sea first change", land_sea_changes[0][0])
 
+        try:
+            first_sea_land_change = sea_land_changes[0][0]
+            first_land_sea_change = land_sea_changes[0][0]
+        except Exception:
+            first_sea_land_change = None
+            first_land_sea_change = None
+        print("fir", first_sea_land_change, first_land_sea_change)
         # Check if unconsolitated values on the coast
         unconsol = sum(x == ("su",) for x in self.geology)
-        print("self.geology", self.geology)
-        print("unconsoli", unconsol)
         non_unconsol = sum(x != ("su",) for x in self.geology)
-        print("non_uncon", non_unconsol)
 
         if (
             unconsol >= non_unconsol
             and sea_land_changes.shape[0] > 1
-            and (first_land_sea_change - first_sea_land_change < 8)
+            and (
+                first_land_sea_change - first_sea_land_change < 4
+            )  # 4*300 = 1200 meter width?
         ):
             barrier = True
         else:

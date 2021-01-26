@@ -470,9 +470,33 @@ class DB:
         gar = float(tot[0])
         pop = float(tot[1])
         cursor.close()
-        print(gar, pop)
         return gar, pop
 
+    def intersect_with_osm_beaches(self, wkt, crs=4326) -> str:
+        """
+        coast.osm_beach
+        Args:
+            wkt ([type]): [description]
+            crs ([type]): [description]
+            db_epsg ([type]): [description]
+
+        Returns:
+            Any: [description]
+        """
+
+        query = f"""SELECT EXISTS(
+                    SELECT 1 
+                    FROM coast.beach
+                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                )"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        beach = cursor.fetchone()[0]
+        cursor.close()
+        print("beach", beach)
+        return beach
+
+    # TODO get rid of this function? Intersect with osm beach polygons the new one.
     def get_beach_value(self, wkt, crs=4326, dist=1):
         """coast.shorelinechange
         values to expect from database:
