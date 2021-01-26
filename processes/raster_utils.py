@@ -175,20 +175,24 @@ def calc_slope(
     elevations,
     segments,
 ):
-
+    # print("elev", elevations, segments)
     try:
         # Replace nan with 0
         y = np.array(elevations)
         y = np.nan_to_num(y)
 
         x = np.array(segments)
-        inland800 = (np.argwhere(x < 900).shape)[0]
+        # inland500 = (np.argwhere(x < 500).shape)[0]
+        # print("inalnd", inland500)
+        # print("insland500", inland500)
 
-        x = x[:inland800]
-        y = y[:inland800]
-        logging.info("y", y)
+        # x = x[:inland500]
+        # print("x", x)
+        # y = y[:inland500]
+        # print("y", y)
         # slope of every segment
         m = np.diff(y) / np.diff(x)
+        # print("m", m)
 
         # detect change of slope (negative to positive and reverse)
         msign = np.sign(m)
@@ -242,15 +246,15 @@ def detect_sea_patterns(landuse_values):
     # We want alwasy the first point of the transect to be on the sea
     if landuse_values[0] != 210:
         landuse_values[0] = 210
-    print("land_use before pattern", [i for i in landuse_values])
+    # print("land_use before pattern", [i for i in landuse_values])
     landuse_array = np.array(landuse_values)
     landuse_array = np.where(landuse_array == 210, "sea", "land")
     # print("land_use after np where", [i for i in landuse_array])
 
     sea_land_pattern = detect_pattern(["sea", "land"], landuse_array)
     land_sea_pattern = detect_pattern(["land", "sea"], landuse_array)
-    print("sea_land_pattern", sea_land_pattern)
-    print("land_sea_pattern", land_sea_pattern)
+    # print("sea_land_pattern", sea_land_pattern)
+    # print("land_sea_pattern", land_sea_pattern)
 
     return sea_land_pattern, land_sea_pattern
 
