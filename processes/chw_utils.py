@@ -79,25 +79,28 @@ class CHW:
         self.globcover = Path(self.tmp) / "globcover.tif"
 
         self.transect_wkt = geojson_to_wkt(self.transect)
-        self.point_on_coast = self.db.point_on_coast(self.transect_wkt)
         self.bbox = get_bounds(self.transect)
 
         self.transect_length = change_coords(self.transect).length
 
         # 10km from the point on the coast and -180 direction
+        self.transect2km = self.db.ST_line_extend(
+            wkt=self.transect_wkt, dist=2000, direction=-180
+        )
+
+        # 10km from the point on the coast and -180 direction
         self.transect10km = self.db.ST_line_extend(
-            wkt=self.transect_wkt, P=self.point_on_coast, dist=10000, direction=-180
+            wkt=self.transect_wkt, dist=10000, direction=-180
         )
 
         # 100km from the point on the coast and -180 deg direction
         self.transect100km = self.db.ST_line_extend(
-            wkt=self.transect_wkt, P=self.point_on_coast, dist=100000, direction=-180
+            wkt=self.transect_wkt, dist=100000, direction=-180
         )
 
-        self.transect_500_inland = self.db.ST_line_extend(
-            wkt=self.transect_wkt, P=self.point_on_coast, dist=500, direction=180
-        )
-        print("500 m inland wkt", self.transect_500_inland)
+        # self.transect_500_inland = self.db.ST_line_extend(
+        #    wkt=self.transect_wkt, dist=500, direction=180
+        # )
 
         # TODO add length of 20km.
         # 20 km transect = + 20km from point on the coast of the given transect (180 deg direction)
@@ -117,15 +120,14 @@ class CHW:
         # in the whole process
         self.elevations, self.segments = get_elevation_profile(
             dem=self.dem,
-            line=change_coords(self.transect_500_inland),
-            line_length=change_coords(self.transect_500_inland).length,
+            line=change_coords(self.transect_wkt),
+            line_length=change_coords(self.transect_wkt).length,
             outfname=self.dem_3857,
         )
 
         self.slope = round(calc_slope(self.elevations, self.segments), 3)
 
         self.geology = self.db.get_geol_glim_values(self.transect_wkt)
-        print("self.geology", self.geology)
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -155,20 +157,20 @@ class CHW:
         If moderately exposed it can drop to protected(<10 km closest coastline that protects it)
         """
         self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
-        # print("self.wave_exposure", self.wave_exposure)
+        print("self.wave_exposure", self.wave_exposure)
 
         if self.wave_exposure == "moderately exposed":
             closest_coasts = self.db.fetch_closest_coasts(self.transect10km)
-            # print("closest_coasts 10km", closest_coasts)
+            print("closest_coasts 10km", closest_coasts)
             if len(closest_coasts) > 1:
                 self.wave_exposure = "protected"
         elif self.wave_exposure == "exposed":
             closest_coasts = self.db.fetch_closest_coasts(self.transect100km)
-            # print("closest_coasts 100km", closest_coasts)
+            print("closest_coasts 100km", closest_coasts)
             if len(closest_coasts) > 1:
                 self.wave_exposure = "moderately exposed"
             closest_coasts = self.db.fetch_closest_coasts(self.transect10km)
-            # print("closest_coasts 10km", closest_coasts)
+            print("closest_coasts 10km", closest_coasts)
             if len(closest_coasts) > 1:
                 self.wave_exposure = "protected"
 
@@ -198,8 +200,8 @@ class CHW:
             "Flat hard rock",
             "Corals",
         }:
-            # corals check intersection with transect 10 km -180 (close to the coast)
-            if self.db.intersect_with_corals(self.transect10km):
+            # corals check intersection with transect 2 km -180 (close to the coast)
+            if self.db.intersect_with_corals(self.transect2km):
                 self.flora_fauna = "Corals"
             elif self.db.intersect_with_mangroves(
                 self.transect_wkt
@@ -369,6 +371,8 @@ class CHW:
         sea_land_changes = np.argwhere(sea_land_pattern == True)
         # find where the land-sea pattern is detected
         land_sea_changes = np.argwhere(land_sea_pattern == True)
+        print("CHANGES", sea_land_changes, land_sea_changes)
+        print("geology", self.geology)
 
         try:
             first_sea_land_change = sea_land_changes[0][0]
@@ -376,7 +380,7 @@ class CHW:
         except Exception:
             first_sea_land_change = None
             first_land_sea_change = None
-        print("fir", first_sea_land_change, first_land_sea_change)
+
         # Check if unconsolitated values on the coast
         unconsol = sum(x == ("su",) for x in self.geology)
         non_unconsol = sum(x != ("su",) for x in self.geology)

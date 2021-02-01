@@ -1250,3 +1250,272 @@ NoneType: None
 2020-12-08 13:19:38,840] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
 2020-12-08 13:19:46,222] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
 2020-12-08 13:19:46,230] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw_local_git\tmp\pywps_process_6zyqt6vr
+2021-01-26 13:00:30,403] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:00:30,428] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:00:35,973] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:00:35,978] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_efqsaccg
+2021-01-26 13:00:36,335] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:00:36,337] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:00:44,463] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:00:44,468] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_73k3qt4e
+2021-01-26 13:01:55,924] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:01:55,926] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:00,974] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:00,980] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_2_170sha
+2021-01-26 13:02:01,314] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:02:01,316] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:09,134] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:09,139] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_klph_3p1
+2021-01-26 13:02:18,971] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:02:18,972] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:23,768] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:23,772] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_ar_zd0ap
+2021-01-26 13:02:24,111] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:02:24,114] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:31,928] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:02:31,934] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_syo2gilh
+2021-01-26 13:43:33,111] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:43:33,114] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:43:38,112] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:43:38,117] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_jbch11zi
+2021-01-26 13:43:38,486] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:43:38,492] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:43:46,508] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:43:46,514] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_2wr1_xcc
+2021-01-26 13:46:28,778] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:46:28,782] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:46:34,152] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:46:34,158] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_2hfe2emi
+2021-01-26 13:46:34,505] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 13:46:34,508] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:47:01,460] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 13:47:01,465] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_yo3obw0_
+2021-01-26 14:00:51,823] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:00:51,826] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:00:56,691] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:00:56,698] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_3vm1nc1l
+2021-01-26 14:00:57,043] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:00:57,047] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:01:06,944] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:01:06,950] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_p4xr_0vq
+2021-01-26 14:04:02,420] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:04:02,436] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:04:07,732] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:04:07,738] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_vs6m3yd7
+2021-01-26 14:04:08,087] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:04:08,089] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:04:17,786] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:04:17,792] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_nkp3wmk8
+2021-01-26 14:22:57,994] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:22:58,010] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:23:03,758] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:23:03,764] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_xp5kco8g
+2021-01-26 14:23:04,112] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:23:04,115] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:23:27,014] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:23:27,020] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_je5um0d6
+2021-01-26 14:24:00,522] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:24:00,524] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:24:05,452] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:24:05,457] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_mbbp8tvb
+2021-01-26 14:24:05,793] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:24:05,794] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:24:14,213] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:24:14,220] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_xnjqn9xr
+2021-01-26 14:25:14,878] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:25:14,895] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:25:20,124] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:25:20,138] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_bbny2x4w
+2021-01-26 14:26:35,579] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:26:35,595] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:26:40,850] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:26:40,856] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_j54npe0i
+2021-01-26 14:26:41,195] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:26:41,196] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:26:45,943] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:26:45,945] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:26:45,945] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:26:45,949] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_fd9_96p7
+2021-01-26 14:26:58,060] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:26:58,062] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:27:02,947] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:27:02,952] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_4l50yyb8
+2021-01-26 14:27:03,295] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:27:03,298] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:27:08,027] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:27:08,028] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:27:08,029] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:27:08,033] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_f7h7cfb6
+2021-01-26 14:31:37,491] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:31:37,507] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:31:43,067] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:31:43,072] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_xnff1xym
+2021-01-26 14:31:43,405] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:31:43,407] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:32:05,389] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:32:05,396] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_wjist0_y
+2021-01-26 14:32:25,493] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:32:25,495] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:32:30,351] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:32:30,356] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_g02z8igd
+2021-01-26 14:32:30,694] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:32:30,697] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:32:37,408] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:32:37,413] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_qh5tnau6
+2021-01-26 14:33:20,047] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:33:20,049] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:24,976] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:24,981] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_vt7aw6jc
+2021-01-26 14:33:25,329] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:33:25,332] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:33,359] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:33,364] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_vjs5tq77
+2021-01-26 14:33:38,707] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:33:38,709] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:43,612] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:43,618] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_ddw_2g_n
+2021-01-26 14:33:43,958] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:33:43,960] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:51,375] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:33:51,380] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_0apbmfck
+2021-01-26 14:34:08,163] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:34:08,164] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:13,062] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:13,067] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_y39d6ehm
+2021-01-26 14:34:13,411] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:34:13,412] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:20,900] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:20,909] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_euvaque0
+2021-01-26 14:34:34,850] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:34:34,853] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:39,668] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:39,674] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_crb1qcl6
+2021-01-26 14:34:40,020] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:34:40,023] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:46,823] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:34:46,828] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_iegenmnw
+2021-01-26 14:36:46,956] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:36:46,959] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:36:51,801] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:36:51,806] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_iv15qcib
+2021-01-26 14:36:52,169] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:36:52,172] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:36:58,808] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:36:58,814] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_6tbrj69n
+2021-01-26 14:38:05,388] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:38:05,402] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:38:10,627] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:38:10,633] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process__c4c1uge
+2021-01-26 14:38:10,987] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:38:10,988] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:38:17,598] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:38:17,605] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_kzojun3u
+2021-01-26 14:39:37,052] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:39:37,068] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:39:42,278] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:39:42,283] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_b2eyq227
+2021-01-26 14:39:42,628] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:39:42,631] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:39:49,203] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:39:49,210] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_w_9oonnb
+2021-01-26 14:40:42,049] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:40:42,066] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:40:47,490] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:40:47,495] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_hgrq732s
+2021-01-26 14:40:47,833] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:40:47,837] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:40:54,448] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:40:54,454] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_x5v1qmth
+2021-01-26 14:41:54,394] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:41:54,409] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:41:59,669] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:41:59,675] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_fzapp3sa
+2021-01-26 14:42:00,014] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:42:00,016] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:42:06,604] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:42:06,611] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_qalyev67
+2021-01-26 14:43:40,561] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:43:40,578] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:43:45,794] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:43:45,799] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_o4xn9p37
+2021-01-26 14:43:46,136] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:43:46,138] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:44:05,440] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:44:05,447] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_np5vzzvn
+2021-01-26 14:45:53,043] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:45:53,058] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:45:58,719] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:45:58,725] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_5xzn_hcs
+2021-01-26 14:45:59,077] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:45:59,080] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:46:20,160] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=256 module=Process function=_run_process Process error: method=wps_chw2.py._handler, line=118, msg=current transaction is aborted, commands ignored until end of transaction block
+
+2021-01-26 14:46:20,168] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_7m8_u031
+2021-01-26 14:46:20,171] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\exceptions.py line=45 module=exceptions function=__init__ Exception: code: 400, description: Process failed, please check server error log, locator: 
+NoneType: None
+2021-01-26 14:49:07,172] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:49:07,186] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:49:12,339] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=256 module=Process function=_run_process Process error: method=wps_create_transect.py._handler, line=109, msg='NoneType' object is not subscriptable
+2021-01-26 14:49:12,343] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_ks1y2f9s
+2021-01-26 14:49:12,345] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\exceptions.py line=45 module=exceptions function=__init__ Exception: code: 400, description: Process failed, please check server error log, locator: 
+NoneType: None
+2021-01-26 14:50:26,839] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:50:26,869] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:50:32,565] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:50:32,570] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_j5ucpd4_
+2021-01-26 14:50:32,917] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:50:32,921] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:50:52,247] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:50:52,254] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_wef7j5sk
+2021-01-26 14:51:12,798] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:51:12,812] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:51:17,917] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=256 module=Process function=_run_process Process error: method=wps_create_transect.py._handler, line=109, msg='NoneType' object is not subscriptable
+2021-01-26 14:51:17,921] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_xyyoewx8
+2021-01-26 14:51:17,923] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\exceptions.py line=45 module=exceptions function=__init__ Exception: code: 400, description: Process failed, please check server error log, locator: 
+NoneType: None
+2021-01-26 14:53:29,618] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:53:29,635] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:53:35,041] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:53:35,046] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_u1pmfiuz
+2021-01-26 14:53:35,408] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 14:53:35,410] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:53:44,849] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 14:53:44,855] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_51of9c4_
+2021-01-26 15:32:44,506] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:32:44,523] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:32:50,183] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:32:50,189] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_a_tyw5ol
+2021-01-26 15:32:50,535] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:32:50,537] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:33:11,543] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:33:11,549] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_bteekr5t
+2021-01-26 15:33:41,141] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:33:41,143] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:33:46,026] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:33:46,033] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_4j5l5mlj
+2021-01-26 15:33:46,388] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:33:46,391] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:33:54,571] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:33:54,577] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_rsdlv9xs
+2021-01-26 15:34:21,569] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:34:21,571] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:34:26,395] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:34:26,400] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_a2fvoovx
+2021-01-26 15:34:26,738] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:34:26,739] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:34:33,037] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:34:33,043] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_6md31ynr
+2021-01-26 15:34:35,943] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 15:34:35,946] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 15:34:40,678] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=256 module=Process function=_run_process Process error: method=wps_create_transect.py._handler, line=109, msg='NoneType' object is not subscriptable
+2021-01-26 15:34:40,683] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_6b3d7ltl
+2021-01-26 15:34:40,685] [ERROR] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\exceptions.py line=45 module=exceptions function=__init__ Exception: code: 400, description: Process failed, please check server error log, locator: 
+NoneType: None
+2021-01-26 16:25:47,571] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 16:25:47,589] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 16:25:53,152] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 16:25:53,159] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_9yth0jdd
+2021-01-26 16:25:53,521] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Service.py line=310 module=Service function=call Request: execute
+2021-01-26 16:25:53,522] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 16:26:16,668] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\validator\complexvalidator.py line=154 module=complexvalidator function=validatejson validating JSON; Mode: 0
+2021-01-26 16:26:16,673] [INFO] file=C:\Users\micha\.conda\envs\chw2\lib\site-packages\pywps\app\Process.py line=303 module=Process function=clean Removing temporary working directory: D:\documents\chw3_0-wps\tmp\pywps_process_ebocg8iv
