@@ -27,15 +27,9 @@
 # your own tools.
 
 import configparser
-
-import psycopg2
-from typing import List
-import geojson
-from shapely.geometry import shape
 from pathlib import Path
 import tempfile
-from jinja2 import Environment, PackageLoader, FileSystemLoader
-import json
+
 
 service_path = Path(__file__).resolve().parent
 
