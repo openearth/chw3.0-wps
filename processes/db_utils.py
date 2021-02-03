@@ -49,27 +49,6 @@ class DB:
     def close_db_connection(self):
         self.connection.close()
 
-    def get_geol_glim_values(self, wkt, crs=4326, db_crs=3857) -> List[str]:
-        """Connects to the chw2 database and gets the
-        'su' type where the wkt intersects
-        NOTE: sediment plain, sloping soft rock, flat hard rock, sloping hard rock
-        NOTE: geollayout.glim -- Global lithological map database v1.0
-        Args:
-            wkt:str
-            crs:int
-            db_crs:int
-        """
-
-        query = f"""SELECT xx 
-                FROM geollayout.glim
-                WHERE ST_Intersects(shape, ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
-                """
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        geology_values = cursor.fetchall()
-        cursor.close()
-        return geology_values
-
     def intersect_with_estuaries(self, wkt, crs=4326) -> bool:
         """coast.estuaries
         Args:
@@ -305,12 +284,10 @@ class DB:
                         '{flora_fauna}' = ANY(flora_fauna) and
                         '{sediment_balance}' = ANY(sediment_balance) and
                         '{storm_climate}' = ANY(storm_climate);"""
-        # print("query 1S", query)
 
         cursor = self.connection.cursor()
         cursor.execute(query)
         classes = cursor.fetchone()
-        # print("query return", classes)
         cursor.close()
         return classes
 
@@ -431,29 +408,35 @@ class DB:
     # wkt = transect
     def point_on_coast(self, wkt, crs=4326):
 
-        query = f"""SELECT ST_AsText(ST_ClosestPoint(st_intersection, ST_GeomFromText(\'{wkt}\', {crs})))
-
-                    FROM (SELECT ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs}))
-                        FROM(
-                        SELECT geom
-                        FROM coast.osm_coastline
-                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line) as poi;
-                        
-                    SELECT ST_AsText(ST_ClosestPoint(st_intersection, ST_GeomFromText(\'{wkt}\', {crs})))
-
-                    FROM (SELECT ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs}))
-                        FROM(
-                        SELECT geom
-                        FROM coast.osm_coastline
-                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line) as poi;
-                    """
+        """"""
+        query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs})))            
+                    FROM (SELECT geom
+                    FROM coast.osm_coastline
+                    WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
+                    ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
+                """
 
         cursor = self.connection.cursor()
         cursor.execute(query)
-        # print("QUEERY FOR FINDING POINT ON COAST:", query)
         point = cursor.fetchone()[0]
         cursor.close()
         return point
+
+    def create_coast_transect(self, point_on_sea, point_on_coast, dist, crs=4326):
+
+        P1 = f"ST_GeomFromText('{point_on_sea}', {crs})"
+        P2 = f"ST_GeomFromText('{point_on_coast}', {crs})"
+
+        azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
+
+        projection = f"ST_Project({P2}, {dist}, {azimuth})"
+
+        query = f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        transect = cursor.fetchone()[0]
+        cursor.close()
+        return transect
 
     def get_gar_pop_values(self, wkt, crs=4326, dist=1):
         """gar.gar
@@ -518,3 +501,50 @@ class DB:
         beach = cursor.fetchone()[0]
         cursor.close()
         return beach
+
+    def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=5000):
+        """
+        check for closest geology glim values from
+        the database table geollayout.glim
+        in a buffer of 5000km
+
+        Get values in a 5000km buffer, sort them by distance
+        and gets the closest one.
+
+        """
+
+        query = f"""SELECT xx
+                    FROM geollayout.glim 
+                    WHERE ST_DWithin(shape, 
+                        ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}), {dist}) 
+                    ORDER BY ST_Distance(shape, 
+                                        ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs})) 
+                    LIMIT 1;"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        print("GLIM QUERY:", query)
+        glim = cursor.fetchone()[0]
+        print("GLIM RESULT:", glim)
+        cursor.close()
+        return glim
+
+    def get_geol_glim_values(self, wkt, crs=4326, db_crs=3857) -> List[str]:
+        """Connects to the chw2 database and gets the
+        'su' type where the wkt intersects
+        NOTE: sediment plain, sloping soft rock, flat hard rock, sloping hard rock
+        NOTE: geollayout.glim -- Global lithological map database v1.0
+        Args:
+            wkt:str
+            crs:int
+            db_crs:int
+        """
+
+        query = f"""SELECT xx 
+                FROM geollayout.glim
+                WHERE ST_Intersects(shape, ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
+                """
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        geology_values = cursor.fetchall()
+        cursor.close()
+        return geology_values

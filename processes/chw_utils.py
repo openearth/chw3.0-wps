@@ -126,8 +126,9 @@ class CHW:
         )
 
         self.slope = round(calc_slope(self.elevations, self.segments), 3)
-
-        self.geology = self.db.get_geol_glim_values(self.transect_wkt)
+        # TODO get closest geology instead of list with values that transect intersects
+        # self.geology = self.db.get_geol_glim_values(self.transect_wkt)
+        self.geology = self.db.get_closest_geology_glim(self.transect_wkt)
 
     # 1st level check
     def get_info_geological_layout(self):
