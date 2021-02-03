@@ -480,7 +480,6 @@ class DB:
         cursor.execute(query)
         beach = cursor.fetchone()[0]
         cursor.close()
-        # print("beach", beach)
         return beach
 
     # TODO get rid of this function? Intersect with osm beach polygons the new one.

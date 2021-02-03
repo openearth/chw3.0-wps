@@ -126,8 +126,6 @@ class CHW:
         )
 
         self.slope = round(calc_slope(self.elevations, self.segments), 3)
-        # TODO get closest geology instead of list with values that transect intersects
-        # self.geology = self.db.get_geol_glim_values(self.transect_wkt)
         self.geology = self.db.get_closest_geology_glim(self.transect_wkt)
 
     # 1st level check
@@ -318,23 +316,15 @@ class CHW:
             str: The name of the geology type
         """
 
-        unconsol = sum(x in [("su",), ("sm",), ("ss",), ("sc",)] for x in self.geology)
-        non_unconsol = sum(
-            x not in [("su",), ("sm",), ("ss",), ("sc",)] for x in self.geology
-        )
+        unconsol = ["su", "sm", "ss", "sc"]
 
-        if unconsol >= non_unconsol:
-            geology_type = "soft"
-        else:
-            geology_type = "hard"
-
-        if geology_type == "soft" and self.slope <= 3:
+        if self.geology in unconsol and self.slope <= 3:
             return "Sediment plain"
 
-        elif geology_type == "soft" and self.slope > 3:
+        elif self.geology in unconsol and self.slope > 3:
             return "Sloping soft rock"
 
-        elif geology_type == "hard" and self.slope <= 3:
+        elif self.geology not in unconsol and self.slope <= 3:
             return "Flat hard rock"
 
         else:
