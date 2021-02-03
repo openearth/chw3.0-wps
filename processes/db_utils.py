@@ -305,10 +305,12 @@ class DB:
                         '{flora_fauna}' = ANY(flora_fauna) and
                         '{sediment_balance}' = ANY(sediment_balance) and
                         '{storm_climate}' = ANY(storm_climate);"""
+        # print("query 1S", query)
 
         cursor = self.connection.cursor()
         cursor.execute(query)
         classes = cursor.fetchone()
+        # print("query return", classes)
         cursor.close()
         return classes
 
@@ -320,6 +322,7 @@ class DB:
                     JOIN management.measures ms on ms.mid = mo.mid
                     WHERE code = '{code}') as opt
                     GROUP BY opt.hazard;"""
+        # print("query", query)
         cursor = self.connection.cursor()
         cursor.execute(query)
         measures = cursor.fetchall()
@@ -447,6 +450,7 @@ class DB:
 
         cursor = self.connection.cursor()
         cursor.execute(query)
+        # print("QUEERY FOR FINDING POINT ON COAST:", query)
         point = cursor.fetchone()[0]
         cursor.close()
         return point
@@ -493,7 +497,7 @@ class DB:
         cursor.execute(query)
         beach = cursor.fetchone()[0]
         cursor.close()
-        print("beach", beach)
+        # print("beach", beach)
         return beach
 
     # TODO get rid of this function? Intersect with osm beach polygons the new one.
