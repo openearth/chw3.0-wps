@@ -28,7 +28,6 @@
 
 from .wcs_utils import LS
 import logging
-from typing import List
 import numpy as np
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
@@ -234,11 +233,13 @@ def calc_slope(
 
         slopes = [abs(slope * 100) for slope in slopes]
         mean_slope = mean(slopes)
+        max_slope = max(slopes)
     except Exception:
         logging.info("slope is 0 along the line")
         mean_slope = 0.00
+        max_slope = 0.00
 
-    return mean_slope
+    return mean_slope, max_slope
 
 
 def detect_sea_patterns(landuse_values):
@@ -263,3 +264,10 @@ def read_raster_values(file):
     with rasterio.open(file) as dataset:
         values = dataset.read(1)
         return values
+
+
+def mean_elevation(dem):
+    values = read_raster_values(dem)
+    values = np.where(values == -9999, 0, values)
+    print("--ELEVATION values", values)
+    return np.mean(values)

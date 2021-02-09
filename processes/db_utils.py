@@ -49,27 +49,6 @@ class DB:
     def close_db_connection(self):
         self.connection.close()
 
-    def get_geol_glim_values(self, wkt, crs=4326, db_crs=3857) -> List[str]:
-        """Connects to the chw2 database and gets the
-        'su' type where the wkt intersects
-        NOTE: sediment plain, sloping soft rock, flat hard rock, sloping hard rock
-        NOTE: geollayout.glim -- Global lithological map database v1.0
-        Args:
-            wkt:str
-            crs:int
-            db_crs:int
-        """
-
-        query = f"""SELECT xx 
-                FROM geollayout.glim
-                WHERE ST_Intersects(shape, ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
-                """
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        geology_values = cursor.fetchall()
-        cursor.close()
-        return geology_values
-
     def intersect_with_estuaries(self, wkt, crs=4326) -> bool:
         """coast.estuaries
         Args:
@@ -112,6 +91,7 @@ class DB:
         cursor.execute(query)
         corals = cursor.fetchone()[0]
         cursor.close()
+        print("---Intersect with corals is -->", corals)
         return corals
 
     def intersect_with_mangroves(self, wkt, crs=4326) -> bool:
@@ -216,8 +196,12 @@ class DB:
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
-        cursor.execute(query)
-        change_rate = cursor.fetchone()[0]
+        try:
+            cursor.execute(query)
+            change_rate = cursor.fetchone()[0]
+        except Exception:
+            change_rate = None
+        cursor.close()
         return change_rate
 
     def get_shorelinechange_values(self, wkt, crs=4326, dist=1):
@@ -233,9 +217,13 @@ class DB:
                     ORDER BY ST_Distance(geom, 
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
+
         cursor = self.connection.cursor()
-        cursor.execute(query)
-        change = cursor.fetchone()[0]
+        try:
+            cursor.execute(query)
+            change = cursor.fetchone()[0]
+        except Exception:
+            change = None
         cursor.close()
         return change
 
@@ -254,8 +242,11 @@ class DB:
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
+
         cursor.execute(query)
+        print("---GET cyclone reisk query", query)
         cyclone_risk = cursor.fetchone()[0]
+        # print("cyclone_risk", cyclone_risk)
         cursor.close()
         return cyclone_risk
 
@@ -378,7 +369,7 @@ class DB:
         """Extends the transect based on a given length, to either 180 or -180 direction
 
         Args:
-            wkt ([type]): [description]
+            wkt
             transect_length (int, optional): [description]. Defaults to 0.
             P (bool, optional): [description]. Defaults to False.
             dist (int, optional): [description]. Defaults to 0.
@@ -428,28 +419,35 @@ class DB:
     # wkt = transect
     def point_on_coast(self, wkt, crs=4326):
 
-        query = f"""SELECT ST_AsText(ST_ClosestPoint(st_intersection, ST_GeomFromText(\'{wkt}\', {crs})))
-
-                    FROM (SELECT ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs}))
-                        FROM(
-                        SELECT geom
-                        FROM coast.osm_coastline
-                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line) as poi;
-                        
-                    SELECT ST_AsText(ST_ClosestPoint(st_intersection, ST_GeomFromText(\'{wkt}\', {crs})))
-
-                    FROM (SELECT ST_Intersection(geom, ST_GeomFromText(\'{wkt}\', {crs}))
-                        FROM(
-                        SELECT geom
-                        FROM coast.osm_coastline
-                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) as c_line) as poi;
-                    """
+        """"""
+        query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs})))            
+                    FROM (SELECT geom
+                    FROM coast.osm_coastline
+                    WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
+                    ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
+                """
 
         cursor = self.connection.cursor()
         cursor.execute(query)
         point = cursor.fetchone()[0]
         cursor.close()
         return point
+
+    def create_coast_transect(self, point_on_sea, point_on_coast, dist, crs=4326):
+
+        P1 = f"ST_GeomFromText('{point_on_sea}', {crs})"
+        P2 = f"ST_GeomFromText('{point_on_coast}', {crs})"
+
+        azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
+
+        projection = f"ST_Project({P2}, {dist}, {azimuth})"
+
+        query = f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        transect = cursor.fetchone()[0]
+        cursor.close()
+        return transect
 
     def get_gar_pop_values(self, wkt, crs=4326, dist=1):
         """gar.gar
@@ -486,14 +484,15 @@ class DB:
 
         query = f"""SELECT EXISTS(
                     SELECT 1 
-                    FROM coast.beach
+                    FROM coast.osm_beach
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
+        print("--- INTERSECT WITH OSM BEACHES QUERY", query)
         cursor = self.connection.cursor()
         cursor.execute(query)
         beach = cursor.fetchone()[0]
+        print("BEACH", beach)
         cursor.close()
-        print("beach", beach)
         return beach
 
     # TODO get rid of this function? Intersect with osm beach polygons the new one.
@@ -514,3 +513,76 @@ class DB:
         beach = cursor.fetchone()[0]
         cursor.close()
         return beach
+
+    def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=15000):
+        """
+        check for closest geology glim values from
+        the database table geollayout.glim
+        in a buffer of 15000m
+
+        Get values in a buffer, sort them by distance
+        and gets the closest one.
+
+        """
+
+        query = f"""SELECT xx
+                    FROM geollayout.glim 
+                    WHERE ST_DWithin(shape, 
+                        ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}), {dist}) 
+                    ORDER BY ST_Distance(shape, 
+                                        ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs})) 
+                    LIMIT 1;"""
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(query)
+            glim = cursor.fetchone()[0]
+
+        except Exception:
+            glim = None
+        cursor.close()
+        return glim
+
+    def get_geol_glim_values(self, wkt, crs=4326, db_crs=3857) -> List[str]:
+        """Connects to the chw2 database and gets the
+        'su' type where the wkt intersects
+        NOTE: sediment plain, sloping soft rock, flat hard rock, sloping hard rock
+        NOTE: geollayout.glim -- Global lithological map database v1.0
+        Args:
+            wkt:str
+            crs:int
+            db_crs:int
+        """
+
+        query = f"""SELECT xx 
+                FROM geollayout.glim
+                WHERE ST_Intersects(shape, ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
+                """
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        geology_values = cursor.fetchall()
+        cursor.close()
+        return geology_values
+
+    def intersect_with_island(self, wkt, crs=4326):
+        """coast.usgs_islands
+        Args:
+            wkt (str): [description]
+            crs (int): [description]
+
+
+        Returns:
+            bool: True if intersects, false if not
+        """
+
+        query = f"""SELECT EXISTS(
+                    SELECT 1 
+                    FROM coast.usgs_islands
+                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))
+                )"""
+        print("INTERSECTS WITH ISLANDS QUERY")
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        island = cursor.fetchone()[0]
+        print("intersect with island:", island)
+        cursor.close()
+        return island

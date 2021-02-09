@@ -90,7 +90,7 @@ class WpsCreateTransect(Process):
         """Handler function of the WpsCreateTransect"""
 
         try:
-            host, user, password, db, port, _, _, _ = read_config()
+            host, user, password, db, _, _, _, _ = read_config()
             db = DB(user, password, host, db)
 
             # Read input
@@ -104,19 +104,16 @@ class WpsCreateTransect(Process):
                 response.outputs["output_json"].data = json.dumps(output)
             else:
 
-                transect = db.create_transect_to_coast(point_wkt)
-                length = change_coords(transect).length
-
-                # NOTE -180 as the first point is the point on the coast
-                transect_extension = db.ST_line_extend(
-                    wkt=transect, transect_length=length, dist=1000, direction=-180
+                point_on_coast = db.point_on_coast(point_wkt)
+                coast_transect = db.create_coast_transect(
+                    point_wkt, point_on_coast, 500
                 )
 
-                transect_geometry = wkt_geometry(transect_extension)
-
-                output = {"transect_coordinates": transect_geometry["coordinates"]}
+                geom = wkt_geometry(coast_transect)
+                output = {"transect_coordinates": geom["coordinates"]}
                 response.outputs["output_json"].data = json.dumps(output)
+
         except Exception:
-            msg = "Something went wrong during processing"
+            msg = "Something went wrong, try again"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
