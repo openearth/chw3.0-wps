@@ -91,6 +91,7 @@ class DB:
         cursor.execute(query)
         corals = cursor.fetchone()[0]
         cursor.close()
+        print("---Intersect with corals is -->", corals)
         return corals
 
     def intersect_with_mangroves(self, wkt, crs=4326) -> bool:
@@ -195,8 +196,12 @@ class DB:
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
-        cursor.execute(query)
-        change_rate = cursor.fetchone()[0]
+        try:
+            cursor.execute(query)
+            change_rate = cursor.fetchone()[0]
+        except Exception:
+            change_rate = None
+        cursor.close()
         return change_rate
 
     def get_shorelinechange_values(self, wkt, crs=4326, dist=1):
@@ -212,9 +217,13 @@ class DB:
                     ORDER BY ST_Distance(geom, 
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
+
         cursor = self.connection.cursor()
-        cursor.execute(query)
-        change = cursor.fetchone()[0]
+        try:
+            cursor.execute(query)
+            change = cursor.fetchone()[0]
+        except Exception:
+            change = None
         cursor.close()
         return change
 
@@ -233,8 +242,11 @@ class DB:
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
+
         cursor.execute(query)
+        print("---GET cyclone reisk query", query)
         cyclone_risk = cursor.fetchone()[0]
+        # print("cyclone_risk", cyclone_risk)
         cursor.close()
         return cyclone_risk
 
@@ -299,7 +311,6 @@ class DB:
                     JOIN management.measures ms on ms.mid = mo.mid
                     WHERE code = '{code}') as opt
                     GROUP BY opt.hazard;"""
-        # print("query", query)
         cursor = self.connection.cursor()
         cursor.execute(query)
         measures = cursor.fetchall()
@@ -358,7 +369,7 @@ class DB:
         """Extends the transect based on a given length, to either 180 or -180 direction
 
         Args:
-            wkt ([type]): [description]
+            wkt
             transect_length (int, optional): [description]. Defaults to 0.
             P (bool, optional): [description]. Defaults to False.
             dist (int, optional): [description]. Defaults to 0.
@@ -473,12 +484,14 @@ class DB:
 
         query = f"""SELECT EXISTS(
                     SELECT 1 
-                    FROM coast.beach
+                    FROM coast.osm_beach
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
+        print("--- INTERSECT WITH OSM BEACHES QUERY", query)
         cursor = self.connection.cursor()
         cursor.execute(query)
         beach = cursor.fetchone()[0]
+        print("BEACH", beach)
         cursor.close()
         return beach
 
@@ -501,13 +514,13 @@ class DB:
         cursor.close()
         return beach
 
-    def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=5000):
+    def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=15000):
         """
         check for closest geology glim values from
         the database table geollayout.glim
-        in a buffer of 5000km
+        in a buffer of 15000m
 
-        Get values in a 5000km buffer, sort them by distance
+        Get values in a buffer, sort them by distance
         and gets the closest one.
 
         """
@@ -520,10 +533,12 @@ class DB:
                                         ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs})) 
                     LIMIT 1;"""
         cursor = self.connection.cursor()
-        cursor.execute(query)
-        print("GLIM QUERY:", query)
-        glim = cursor.fetchone()[0]
-        print("GLIM RESULT:", glim)
+        try:
+            cursor.execute(query)
+            glim = cursor.fetchone()[0]
+
+        except Exception:
+            glim = None
         cursor.close()
         return glim
 
@@ -547,3 +562,27 @@ class DB:
         geology_values = cursor.fetchall()
         cursor.close()
         return geology_values
+
+    def intersect_with_island(self, wkt, crs=4326):
+        """coast.usgs_islands
+        Args:
+            wkt (str): [description]
+            crs (int): [description]
+
+
+        Returns:
+            bool: True if intersects, false if not
+        """
+
+        query = f"""SELECT EXISTS(
+                    SELECT 1 
+                    FROM coast.usgs_islands
+                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))
+                )"""
+        print("INTERSECTS WITH ISLANDS QUERY")
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        island = cursor.fetchone()[0]
+        print("intersect with island:", island)
+        cursor.close()
+        return island
