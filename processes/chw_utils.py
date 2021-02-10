@@ -77,6 +77,7 @@ class CHW:
         # Filenames/TMP #TODO more the dem, dem_3857, glob
         self.tmp = create_temp_dir(service_path / "outputs")
         self.dem = Path(self.tmp) / "dem.tif"
+        self.dem_2km2 = Path(self.tmp) / "dem_2km2.tif"
         self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
         self.globcover = Path(self.tmp) / "globcover.tif"
 
@@ -99,6 +100,11 @@ class CHW:
             dist=8000,
             direction=180,
         )
+        self.transect_2km = self.db.ST_line_extend(
+            wkt=self.transect_wkt,
+            dist=2000,
+            direction=180,
+        )
         self.transect_5km = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=5000, direction=-180
         )
@@ -115,6 +121,8 @@ class CHW:
         )
 
         self.bbox_50km = get_bounds(self.transect_50km)
+
+        self.bbox_2km = get_bounds(self.transect_2km)
         # CUT the WCS of the DEM with the b
         try:
             cut_wcs(*self.bbox, dem_layer, owsurl, self.dem)
@@ -172,26 +180,29 @@ class CHW:
         or to protected (<10 km closest coastline that protects it).
         If moderately exposed it can drop to protected(<10 km closest coastline that protects it)
         """
+        closest_coasts_10km = self.db.fetch_closest_coasts(self.transect_10km)
+        closest_coasts_100km = self.db.fetch_closest_coasts(self.transect_100km)
+        # print(
+        #    f"----FETCH DEBUGGING part 1-- 10 and 100km closest coasts: {closest_coasts_10km}, {closest_coasts_100km}"
+        # )
         try:
             self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
         except Exception:
             self.wave_exposure = "exposed"
+        # print(f"----FETCH DEBUGGING-- Database returns: {self.wave_exposure}")
 
         if self.wave_exposure == "moderately exposed":
-            closest_coasts = self.db.fetch_closest_coasts(self.transect_10km)
-            # print("closest_coasts 10km", closest_coasts)
-            if len(closest_coasts) > 1:
+            if len(closest_coasts_10km) > 1:
                 self.wave_exposure = "protected"
+
         elif self.wave_exposure == "exposed":
-            closest_coasts = self.db.fetch_closest_coasts(self.transect_100km)
-            # print("closest_coasts 100km", closest_coasts)
-            if len(closest_coasts) > 1:
+            if len(closest_coasts_100km) > 1:
                 self.wave_exposure = "moderately exposed"
-            closest_coasts = self.db.fetch_closest_coasts(self.transect_10km)
-            # print("closest_coasts 10km", closest_coasts)
-            if len(closest_coasts) > 1:
+
+            if len(closest_coasts_10km) > 1:
                 self.wave_exposure = "protected"
-        print("----WAVE EXPOSURE---:", self.wave_exposure)
+        # print(f"----FETCH DEBUGGING-- Database returns: ")
+        # print("----WAVE EXPOSURE---:", self.wave_exposure)
 
     # 3rd level check
     def get_info_tidal_range(self):
@@ -223,10 +234,7 @@ class CHW:
             "Flat hard rock",
             "Corals",
         }:
-            # corals check intersection with transect 2 km -180 (close to the coast)
-            if self.db.intersect_with_corals(
-                self.transect_5km
-            ):  # TODO remove as soon as possible
+            if self.db.intersect_with_corals(self.transect_5km):
                 self.flora_fauna = "Corals"
             elif self.db.intersect_with_mangroves(
                 self.transect_wkt
@@ -276,8 +284,10 @@ class CHW:
         # TODO cyclone risks sometimes does not work. See when and why.
         # NOTE there are cases where no cyclon_risk is return while there are values according to the
         # online version of the tool.
-
-        self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
+        try:
+            self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
+        except Exception:
+            self.storm_climate = "No"
 
     def hazards_classification(self):
 
@@ -338,8 +348,9 @@ class CHW:
     def check_geology_type(self) -> str:
         """
         Connects to database and gets the su values of geology type
-        Checks if su values are dominant in the area
-        According to slope and su values checks for:
+        Checks if unconsolidated sediments and carbonate sediment rocks
+        values are dominant in the area
+
              Sediment plain
              Sloping soft rock
              Flat hard rock
@@ -347,8 +358,8 @@ class CHW:
         Returns:
             str: The name of the geology type
         """
-        # TODO remove sm, ss
-        unconsol = ["su", "sm", "ss", "sc"]
+
+        unconsol = ["su", "sc"]
 
         if self.geology in unconsol and self.slope <= 3:
             return "Sediment plain"
@@ -437,28 +448,19 @@ class CHW:
         """check vegetation with slope 200m inland
         if slope >30% then too steep to have vegetation
         """
-        # NOTE USED TO BE
-        # cut_wcs(*self.bbox, landuse_layer, owsurl, self.globcover)
-        # values = read_raster_values(self.globcover)
-        # non_vegetated = np.count_nonzero(np.logical_and(values >= 190, values <= 220))
-        # vegetated = np.count_nonzero(np.logical_and(values >= 20, values <= 150))
-        # if vegetated >= non_vegetated:
-        # return "Vegetated"
-        # else:
-        # return "Not vegetated"
-        # print("self.max slope", self.max_slope)
+
         if self.max_slope >= 30:
             return "Not vegetated"
         else:
             return "Vegetated"
 
     def check_coral_islands(self):
-        print("---- CHECK CORALS debugging")
-        # print("Elevations over the 500 bbox inland:")
-
-        self.mean_elevation = mean_elevation(self.dem)
-        # and self.mean_elevation <= 10
-        # print("Mean elevation:", self.mean_elevation)
+        try:
+            cut_wcs(*self.bbox_2km, dem_layer, owsurl, self.dem_2km2)
+            self.mean_elevation = mean_elevation(self.dem_2km2)
+            print("MEAN_elevation = ", self.mean_elevation)
+        except Exception:
+            self.mean_elevation = 0
         if (
             self.db.intersect_with_corals(self.transect_8km)
             and self.db.intersect_with_island(self.transect_wkt)
@@ -471,20 +473,15 @@ class CHW:
         return coral_island
 
     def special_case_flat_hard_rock(self):
-        print("special case flat hard rock if statments")
         # and self.db.intersect_with_island(self.transect_wkt) is False
         if self.db.intersect_with_corals(self.transect_5km) and self.slope < 3:
-            print("special case flat hard rock")
             flat_hard_rock = True
         else:
             flat_hard_rock = False
         return flat_hard_rock
 
     def special_case_sloping_hard_rock(self):
-        # and self.db.intersect_with_island(self.transect_wkt) is False
-        print("special case sloping hard rock if statments")
         if self.db.intersect_with_corals(self.transect_5km) and self.slope > 3:
-            print("special case sloping hard rock")
             sloping_hard_rock = True
         else:
             sloping_hard_rock = False

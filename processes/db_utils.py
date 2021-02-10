@@ -91,7 +91,6 @@ class DB:
         cursor.execute(query)
         corals = cursor.fetchone()[0]
         cursor.close()
-        print("---Intersect with corals is -->", corals)
         return corals
 
     def intersect_with_mangroves(self, wkt, crs=4326) -> bool:
@@ -244,9 +243,7 @@ class DB:
         cursor = self.connection.cursor()
 
         cursor.execute(query)
-        print("---GET cyclone reisk query", query)
         cyclone_risk = cursor.fetchone()[0]
-        # print("cyclone_risk", cyclone_risk)
         cursor.close()
         return cyclone_risk
 
@@ -487,27 +484,7 @@ class DB:
                     FROM coast.osm_beach
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-        print("--- INTERSECT WITH OSM BEACHES QUERY", query)
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        beach = cursor.fetchone()[0]
-        print("BEACH", beach)
-        cursor.close()
-        return beach
 
-    # TODO get rid of this function? Intersect with osm beach polygons the new one.
-    def get_beach_value(self, wkt, crs=4326, dist=1):
-        """coast.shorelinechange
-        values to expect from database:
-            boolean
-        """
-        query = f"""SELECT flag_sandy
-                    FROM coast.shorelinechange 
-                    WHERE ST_DWithin(geom, 
-                        ST_GeomFromText(\'{wkt}\', {crs}), {dist}) 
-                    ORDER BY ST_Distance(geom, 
-                                        ST_GeomFromText(\'{wkt}\', {crs})) 
-                    LIMIT 1;"""
         cursor = self.connection.cursor()
         cursor.execute(query)
         beach = cursor.fetchone()[0]
@@ -579,10 +556,8 @@ class DB:
                     FROM coast.usgs_islands
                     WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-        print("INTERSECTS WITH ISLANDS QUERY")
         cursor = self.connection.cursor()
         cursor.execute(query)
         island = cursor.fetchone()[0]
-        print("intersect with island:", island)
         cursor.close()
         return island

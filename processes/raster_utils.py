@@ -254,8 +254,6 @@ def detect_sea_patterns(landuse_values):
 
     sea_land_pattern = detect_pattern(["sea", "land"], landuse_array)
     land_sea_pattern = detect_pattern(["land", "sea"], landuse_array)
-    # print("sea_land_pattern", sea_land_pattern)
-    # print("land_sea_pattern", land_sea_pattern)
 
     return sea_land_pattern, land_sea_pattern
 
@@ -269,5 +267,4 @@ def read_raster_values(file):
 def mean_elevation(dem):
     values = read_raster_values(dem)
     values = np.where(values == -9999, 0, values)
-    print("--ELEVATION values", values)
     return np.mean(values)
