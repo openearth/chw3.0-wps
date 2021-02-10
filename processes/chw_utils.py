@@ -254,6 +254,20 @@ class CHW:
                     if self.tidal_range == "micro"
                     else "Mangrove/tidal flat"
                 )
+            else:
+                lat = self.transect["geometry"]["coordinates"][0][1]
+                if lat > -25 and lat < 25:
+                    self.flora_fauna = (
+                        "Intermittent mangrove"
+                        if self.tidal_range == "micro"
+                        else "Mangrove/tidal flat"
+                    )
+                else:
+                    self.flora_fauna = (
+                        "Intermittent marsh"
+                        if self.tidal_range == "micro"
+                        else "Marsh/tidal flat"
+                    )
         print("-----FLORA FAUNA-----", self.flora_fauna)
 
     # 5th level check
