@@ -32,7 +32,7 @@ import numpy as np
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from scipy.stats import linregress
-from statistics import mean
+from statistics import mean, median
 from pathlib import Path
 
 
@@ -181,17 +181,8 @@ def calc_slope(
         y = np.nan_to_num(y)
 
         x = np.array(segments)
-        # inland500 = (np.argwhere(x < 500).shape)[0]
-        # print("inalnd", inland500)
-        # print("insland500", inland500)
 
-        # x = x[:inland500]
-        # print("x", x)
-        # y = y[:inland500]
-        # print("y", y)
-        # slope of every segment
         m = np.diff(y) / np.diff(x)
-        # print("m", m)
 
         # detect change of slope (negative to positive and reverse)
         msign = np.sign(m)
@@ -242,6 +233,75 @@ def calc_slope(
     return mean_slope, max_slope
 
 
+def calc_slope_200m_inland(
+    elevations,
+    segments,
+):
+    # print("elev", elevations, segments)
+    try:
+        # Replace nan with 0
+        y = np.array(elevations)
+        y = np.nan_to_num(y)
+
+        x = np.array(segments)
+        inland_200 = (np.argwhere(x < 300).shape)[0]
+        print("inland", inland_200)
+
+        x = x[:inland_200]
+        # print("x", x)
+        y = y[:inland_200]
+        # print("y", y)
+        # slope of every segment
+        m = np.diff(y) / np.diff(x)
+        # print("m", m)
+
+        # detect change of slope (negative to positive and reverse)
+        msign = np.sign(m)
+        slope_patterns = np.array(
+            [
+                any(pattern)
+                for pattern in zip(
+                    detect_pattern([0, 1], msign),
+                    detect_pattern([1, -1], msign),
+                    detect_pattern([-1, 1], msign),
+                    detect_pattern([-1, 0], msign),
+                    detect_pattern([1, 0], msign),
+                )
+            ]
+        )
+
+        indeces = np.where(slope_patterns == True)[0] + 2
+        slopes = []
+        indeces_start = indeces - 1
+        loops = len(indeces) + 1
+        indeces_end = indeces
+
+        for i in range(loops):
+            if i == 0:
+                elevations = y[: indeces_end[i]]
+                distances = x[: indeces_end[i]]
+                a = linregress(distances, elevations)
+                slopes.append(a.slope)
+            elif i == len(indeces):
+                elevations = y[indeces_start[i - 1] :]
+                distances = x[indeces_start[i - 1] :]
+                a = linregress(distances, elevations)
+                slopes.append(a.slope)
+            else:
+                elevations = y[indeces_start[i - 1] : indeces_end[i]]
+                distances = x[indeces_start[i - 1] : indeces_end[i]]
+                a = linregress(distances, elevations)
+                slopes.append(a.slope)
+
+        slopes = [abs(slope * 100) for slope in slopes]
+        max_slope = max(slopes)
+    except Exception:
+        logging.info("slope is 0 along the line")
+        max_slope = 0.00
+
+    return max_slope
+
+
 def detect_sea_patterns(landuse_values):
     # The globcover dataset is very coarse dataset (300m)
     # We want alwasy the first point of the transect to be on the sea
@@ -264,7 +324,10 @@ def read_raster_values(file):
         return values
 
 
-def mean_elevation(dem):
+def median_elevation(dem):
     values = read_raster_values(dem)
-    values = np.where(values == -9999, 0, values)
-    return np.mean(values)
+    values = np.ma.masked_where(values == -9999, values)
+
+    median_array = np.ma.median(values, axis=0)
+    med_elev = np.ma.median(median_array)
+    return med_elev
