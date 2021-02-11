@@ -48,7 +48,8 @@ from .raster_utils import (
     get_elevation_profile,
     get_landuse_profile,
     detect_sea_patterns,
-    mean_elevation,
+    median_elevation,
+    calc_slope_200m_inland,
 )
 from .utils import create_temp_dir, read_config
 from .vector_utils import change_coords, geojson_to_wkt, get_bounds
@@ -77,11 +78,12 @@ class CHW:
         # Filenames/TMP #TODO more the dem, dem_3857, glob
         self.tmp = create_temp_dir(service_path / "outputs")
         self.dem = Path(self.tmp) / "dem.tif"
-        self.dem_2km2 = Path(self.tmp) / "dem_2km2.tif"
+        self.dem_5km2 = Path(self.tmp) / "dem_5km2.tif"
         self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
         self.globcover = Path(self.tmp) / "globcover.tif"
 
         self.transect_wkt = geojson_to_wkt(self.transect)
+        print("self.transect", self.transect_wkt)
 
         # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
         # bboxes of the transect : To cut the DEM
@@ -100,9 +102,9 @@ class CHW:
             dist=8000,
             direction=180,
         )
-        self.transect_2km = self.db.ST_line_extend(
+        self.transect_5km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
-            dist=2000,
+            dist=5000,
             direction=180,
         )
         self.transect_5km = self.db.ST_line_extend(
@@ -122,7 +124,8 @@ class CHW:
 
         self.bbox_50km = get_bounds(self.transect_50km)
 
-        self.bbox_2km = get_bounds(self.transect_2km)
+        self.bbox_5km = get_bounds(self.transect_5km)
+
         # CUT the WCS of the DEM with the b
         try:
             cut_wcs(*self.bbox, dem_layer, owsurl, self.dem)
@@ -164,7 +167,9 @@ class CHW:
         elif self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
-        elif self.geology != None and self.check_barrier() is True:
+        elif self.db.intersect_with_barrier_island(self.transect_wkt) is True or (
+            self.geology != None and self.check_barrier() is True
+        ):
             self.geological_layout = "Barrier"
 
         elif self.geology != None:
@@ -232,7 +237,7 @@ class CHW:
         elif self.geological_layout in {
             "Sloping hard rock",
             "Flat hard rock",
-            "Corals",
+            "Coral island",
         }:
             if self.db.intersect_with_corals(self.transect_5km):
                 self.flora_fauna = "Corals"
@@ -256,13 +261,16 @@ class CHW:
                 )
             else:
                 lat = self.transect["geometry"]["coordinates"][0][1]
-                if lat > -25 and lat < 25:
+                print("----LAT----", lat)
+                if lat >= -25 and lat <= 25:
+                    print("---Intermittent mangrove ---")
                     self.flora_fauna = (
                         "Intermittent mangrove"
                         if self.tidal_range == "micro"
                         else "Mangrove/tidal flat"
                     )
                 else:
+                    print("---Intermittent marsh ---")
                     self.flora_fauna = (
                         "Intermittent marsh"
                         if self.tidal_range == "micro"
@@ -400,6 +408,12 @@ class CHW:
                 If the land sea pattern is not detected far from the first sea land pattern (A way to prevent recognize as barriers
                 big (in widht) pieces of land)
         """
+        # coast_line_id = self.db.fetch_closest_coasts(self.transect_wkt)
+        # print("---BARRIER--- FETCH--CLOSEST---COASTLINE---", coast_line_id[0][0])
+        # points = self.db.intersect_points_on_coastline(
+        #    fid=coast_line_id[0][0], wkt=self.transect_wkt
+        # )
+        # print("points --end", points)
         # cut the globcover dataset with the bbox of the 50km transect extension
         globcover50km = Path(self.tmp) / "globcover_50km.tif"
         cut_wcs(*self.bbox_50km, landuse_layer, owsurl, globcover50km)
@@ -462,24 +476,26 @@ class CHW:
         """check vegetation with slope 200m inland
         if slope >30% then too steep to have vegetation
         """
-
-        if self.max_slope >= 30:
+        # Max slope
+        slope = calc_slope_200m_inland(self.elevations, self.segments)
+        print("SLOPE VEGETATION-----", slope)
+        if slope >= 30:
             return "Not vegetated"
         else:
             return "Vegetated"
 
     def check_coral_islands(self):
         try:
-            cut_wcs(*self.bbox_2km, dem_layer, owsurl, self.dem_2km2)
-            self.mean_elevation = mean_elevation(self.dem_2km2)
-            print("MEAN_elevation = ", self.mean_elevation)
+
+            cut_wcs(*self.bbox_5km, dem_layer, owsurl, self.dem_5km2)
+            self.median_elevation = median_elevation(self.dem_5km2)
         except Exception:
-            self.mean_elevation = 0
+            self.median_elevation = 0
         if (
             self.db.intersect_with_corals(self.transect_8km)
             and self.db.intersect_with_island(self.transect_wkt)
             and self.db.intersect_with_corals(self.transect_5km)
-            and self.mean_elevation <= 10
+            and self.median_elevation < 2
         ):
             coral_island = True
         else:
