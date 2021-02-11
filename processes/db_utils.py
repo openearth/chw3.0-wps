@@ -259,7 +259,7 @@ class DB:
             [type]: [description]
         """
         # extend line for searching for closest coasts
-        query = f"""SELECT gid
+        query = f"""SELECT fid
                 FROM coast.osm_coastline
                 WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))"""  # LINESTRING wkt
         cursor = self.connection.cursor()
@@ -554,7 +554,54 @@ class DB:
         query = f"""SELECT EXISTS(
                     SELECT 1 
                     FROM coast.usgs_islands
-                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))
+                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs})) 
+                )"""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        island = cursor.fetchone()[0]
+        cursor.close()
+        return island
+
+    def intersect_points_on_coastline(self, fid, wkt, crs=4326, buffer=0.02):
+        """coast.osm_coastline
+        Args:
+            wkt (str): [description]
+            crs (int): [description]
+
+
+        Returns:
+           Points that buffer of the first point of the transect, intersects the coastline
+        """
+
+        query = f"""SELECT ST_AsText(ST_StartPoint(I.st_intersection)), ST_AsText(ST_EndPoint(I.st_intersection))
+                    FROM (SELECT ST_Intersection(
+                        ST_Buffer(ST_StartPoint(ST_GeomFromText(\'{wkt}\', {crs})),{buffer}),L.geom)
+                    FROM (SELECT geom
+                        FROM coast.osm_coastline 
+                    WHERE fid = {fid}) AS L) AS I;
+                )"""
+
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        points = cursor.fetchone()[0]
+        cursor.close()
+        return points
+
+    def intersect_with_barrier_island(self, wkt, crs=4326):
+        """coast.usgs_islands
+        Args:
+            wkt (str): [description]
+            crs (int): [description]
+
+
+        Returns:
+            bool: True if intersects, false if not
+        """
+
+        query = f"""SELECT EXISTS(
+                    SELECT 1 
+                    FROM coast.usgs_islands
+                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs})) and barrier = True
                 )"""
         cursor = self.connection.cursor()
         cursor.execute(query)
