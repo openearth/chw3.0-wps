@@ -25,9 +25,9 @@
 # Sign up to recieve regular updates of this function, and to contribute
 # your own tools.
 
-# $HeadURL: https://svn.oss.deltares.nl/repos/openearthtools/trunk/python/applications/wps/ri2de/processes/wps_ri2de_slope.py $
+#
 # $Keywords: $
-# http://localhost:5000/wps?request=Execute&service=WPS&identifier=ra2ce_calc_ratio&version=1.0.0&datainputs=layer_name=plasvorming;json_matrix={"values":[[1,1,3,1,1],[1,1,4,1,1],[1,1,5,1,1],[1,1,2,1,1],[1,1,1,1,5]]}
+#
 # PyWPS
 
 # http://localhost:5000/wps?request=GetCapabilities&service=WPS&version=1.0.0
