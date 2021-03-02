@@ -76,6 +76,7 @@ class CHW:
         self.storm_climate = "Any"
 
         # Filenames/TMP #TODO more the dem, dem_3857, glob
+        # unique temp directory for every run
         self.tmp = create_temp_dir(service_path / "outputs")
         self.dem = Path(self.tmp) / "dem.tif"
         self.dem_5km2 = Path(self.tmp) / "dem_5km2.tif"
@@ -85,9 +86,7 @@ class CHW:
         self.transect_wkt = geojson_to_wkt(self.transect)
         print("self.transect", self.transect_wkt)
 
-        # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
-        # bboxes of the transect : To cut the DEM
-        self.bbox = get_bounds(self.transect)
+      
 
         self.transect_length = change_coords(self.transect).length
 
@@ -96,7 +95,6 @@ class CHW:
         # 5km and -180 from the coast: To check if corals vegetation exist
         # 10km and -180 from the coast: To check if intersects coastline (wave exposure)
         # 100km and -180 from the coast: To check if intersects coastline (wave exposure)
-        # 50km inland to the coast (180): To check for the barriers pattern
         self.transect_8km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=8000,
@@ -116,14 +114,11 @@ class CHW:
         self.transect_100km = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=100000, direction=-180
         )
-        self.transect_50km = self.db.ST_line_extend(
-            wkt=self.transect_wkt,
-            dist=50000,
-            direction=180,
-        )
 
-        self.bbox_50km = get_bounds(self.transect_50km)
 
+        # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
+        # bboxes of the transect : To cut the DEM
+        self.bbox = get_bounds(self.transect)
         self.bbox_5km = get_bounds(self.transect_5km)
 
         # CUT the WCS of the DEM with the b
@@ -167,9 +162,7 @@ class CHW:
         elif self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
-        elif self.db.intersect_with_barrier_island(self.transect_wkt) is True or (
-            self.geology != None and self.check_barrier() is True
-        ):
+        elif self.db.intersect_with_barrier_island(self.transect_wkt) is True:
             self.geological_layout = "Barrier"
 
         elif self.geology != None:
@@ -395,82 +388,6 @@ class CHW:
         else:
             return "Sloping hard rock"
 
-    def check_barrier(self) -> bool:
-        """
-        Returns
-        -------
-        bool
-            DESCRIPTION.
-            The pattern that is used here detects 210 water value from the GlobCover dataset over a transect of 20 km.
-            In order to classify as barrier:
-                If unconsolidated values &&
-                If pattern sea-land is detected more than one time over the transect
-                If the land sea pattern is not detected far from the first sea land pattern (A way to prevent recognize as barriers
-                big (in widht) pieces of land)
-        """
-        # coast_line_id = self.db.fetch_closest_coasts(self.transect_wkt)
-        # print("---BARRIER--- FETCH--CLOSEST---COASTLINE---", coast_line_id[0][0])
-        # points = self.db.intersect_points_on_coastline(
-        #    fid=coast_line_id[0][0], wkt=self.transect_wkt
-        # )
-        # print("points --end", points)
-        # cut the globcover dataset with the bbox of the 50km transect extension
-        globcover50km = Path(self.tmp) / "globcover_50km.tif"
-        cut_wcs(*self.bbox_50km, landuse_layer, owsurl, globcover50km)
-
-        # Land use profile over the transect
-        landuse, _ = get_landuse_profile(
-            globcover50km,
-            line=change_coords(self.transect_50km),
-            line_length=change_coords(self.transect_50km).length,
-            temp=self.tmp,
-        )
-
-        # Detect sea pattern: Sea, land and land_sea
-        sea_land_pattern, land_sea_pattern = detect_sea_patterns(landuse)
-
-        # find where sea-land pattern is detected
-        sea_land_changes = np.argwhere(sea_land_pattern == True)
-        # find where the land-sea pattern is detected
-        land_sea_changes = np.argwhere(land_sea_pattern == True)
-
-        try:
-            first_sea_land_change = sea_land_changes[0][0]
-            first_land_sea_change = land_sea_changes[0][0]
-        except Exception:
-            first_sea_land_change = None
-            first_land_sea_change = None
-
-        # Check if unconsolitated values on the coast
-        #        print(
-        #            "BARRIER ",
-        #            self.geology,
-        #            self.slope,
-        #            sea_land_changes.shape[0],
-        #            first_land_sea_change,
-        #            first_sea_land_change,
-        #        )
-        if (
-            self.geology == "su"
-            and self.slope < 3
-            and sea_land_changes.shape[0] > 1
-            and (
-                first_land_sea_change - first_sea_land_change < 10
-            )  # 9*300 = meter width
-        ):
-            barrier = True
-        elif (
-            self.db.intersect_with_saltmarshes(self.transect_50km)
-            and self.slope < 3
-            and sea_land_changes.shape[0] > 1
-            and (
-                first_land_sea_change - first_sea_land_change < 10
-            )  # 9*300 = 1200 meter width
-        ):
-            barrier = True
-        else:
-            barrier = False
-        return barrier
 
     def get_vegetation(self):
         """check vegetation with slope 200m inland
@@ -486,7 +403,6 @@ class CHW:
 
     def check_coral_islands(self):
         try:
-
             cut_wcs(*self.bbox_5km, dem_layer, owsurl, self.dem_5km2)
             self.median_elevation = median_elevation(self.dem_5km2)
         except Exception:
