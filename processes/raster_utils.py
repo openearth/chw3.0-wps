@@ -61,7 +61,7 @@ def cut_wcs(
 
 
 def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
-    """Tranforms a raster to another epsg, writes the new raster in the temp
+    """Tranforms a raster to another epsg, writes the new raster in the temp dir
 
     Args:
         in_file (str, optional): [description]. Defaults to "temp".
@@ -116,50 +116,31 @@ def line_segmentation(line, line_length, step):
     return segments, points
 
 
-def get_landuse_profile(landuse, line, line_length, temp, step=300):
-    """Returns landuse values over the transect with a step equal to the size of the raster
+
+def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
+    """Returns elevation values over the transect with a step eqaul to the resolution of the raster
 
     Args:
-        landuse
-        line
-        line_length
-        outfname
-        step (int, optional);
-
-    Returns:
-        landuse_values, segments
-    """
-    reproject_fname = Path(temp) / "landuse_3857.tif"
-    segments, points = line_segmentation(line, line_length, step)
-    reproject_raster(landuse, reproject_fname)
-
-    # sample raster
-    with rasterio.open(reproject_fname) as dst:
-        values = dst.sample(points, 1, True)
-        landuse_values = [value[0] for value in values]
-        return landuse_values, segments
-
-
-def get_elevation_profile(dem, line, line_length, outfname, step=30):
-    """Returns elevation values over the transect with a step eqaul to the size of the raster
-
-    Args:
-        dem
-        line
-        line_length
-        outfname
-        step (int, optional):
-
+        dem_path: the path of the file
+        line: transect at epsg:3857
+        line_length: transect length
+        temp_dir: the unique temp directory to store it
+        step (int, optional): 
+    #NOTE the step is a parameter and can be adjusted according to the raster.
+    #TODO a suggestin of @Gerrit is to read the resolution from the raster instead of providing it
     Returns:
         elevations, segments
     """
 
+    
+    # reproject raster Epsg:3857
+    dem_reproject_path = Path(temp_dir) / "dem_3857.tif"
     segments, points = line_segmentation(line, line_length, step)
-    # reproject raster
-    reproject_raster(dem, outfname)
+    reproject_raster(dem_path, dem_reproject_path)
 
-    # sample raster
-    with rasterio.open(outfname) as dst:
+
+    # sample the raster over the transect
+    with rasterio.open(dem_reproject_path) as dst:
         values = dst.sample(points, 1, True)
         elevations = [value[0] for value in values]
         return elevations, segments
@@ -237,6 +218,15 @@ def calc_slope_200m_inland(
     elevations,
     segments,
 ):
+    """[summary]
+
+    Args:
+        elevations ([type]): [description]
+        segments ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """    
     # print("elev", elevations, segments)
     try:
         # Replace nan with 0

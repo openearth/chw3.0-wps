@@ -36,26 +36,24 @@
 #               Storm climate
 # Extra info: https://www.coastalhazardwheel.org/
 
-
+import logging
 from pathlib import Path
-import numpy as np
 from .db_utils import DB
-
 
 from .raster_utils import (
     calc_slope,
     cut_wcs,
     get_elevation_profile,
-    get_landuse_profile,
-    detect_sea_patterns,
     median_elevation,
     calc_slope_200m_inland,
 )
-from .utils import create_temp_dir, read_config
+from .utils import create_temp_dir, read_config, translate_hazard_danger
 from .vector_utils import change_coords, geojson_to_wkt, get_bounds
 
 service_path = Path(__file__).resolve().parent
 host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
+
+LOGGER = logging.getLogger("PYWPS")
 
 
 class CHW:
@@ -70,33 +68,29 @@ class CHW:
         # Give default values to the information layers
         self.geological_layout = "Any"
         self.wave_exposure = "Any"
-        self.tidal_range = "Any"
+        self.tidal_range = "any"
         self.flora_fauna = "Any"
         self.sediment_balance = "Balance/Deficit"
         self.storm_climate = "Any"
 
         # Filenames/TMP #TODO more the dem, dem_3857, glob
+        # unique temp directory for every run
         self.tmp = create_temp_dir(service_path / "outputs")
         self.dem = Path(self.tmp) / "dem.tif"
         self.dem_5km2 = Path(self.tmp) / "dem_5km2.tif"
         self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
-        self.globcover = Path(self.tmp) / "globcover.tif"
 
         self.transect_wkt = geojson_to_wkt(self.transect)
-        print("self.transect", self.transect_wkt)
-
-        # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
-        # bboxes of the transect : To cut the DEM
-        self.bbox = get_bounds(self.transect)
+        LOGGER.info(f"---Input transect---: {self.transect_wkt}")
 
         self.transect_length = change_coords(self.transect).length
 
         # Create transects for different procedures:
         # 8km and 180 m from the coast to check if intersects with corals(coral-island)
         # 5km and -180 from the coast: To check if corals vegetation exist
+        # 4km to the sea: To check if corals vegetation exist
         # 10km and -180 from the coast: To check if intersects coastline (wave exposure)
         # 100km and -180 from the coast: To check if intersects coastline (wave exposure)
-        # 50km inland to the coast (180): To check for the barriers pattern
         self.transect_8km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=8000,
@@ -107,8 +101,10 @@ class CHW:
             dist=5000,
             direction=180,
         )
-        self.transect_5km = self.db.ST_line_extend(
-            wkt=self.transect_wkt, dist=5000, direction=-180
+        self.transect_4km = self.db.ST_line_extend(
+            wkt=self.transect_wkt,
+            dist=4000,
+            direction=-180,
         )
         self.transect_10km = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=10000, direction=-180
@@ -116,24 +112,20 @@ class CHW:
         self.transect_100km = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=100000, direction=-180
         )
-        self.transect_50km = self.db.ST_line_extend(
-            wkt=self.transect_wkt,
-            dist=50000,
-            direction=180,
-        )
 
-        self.bbox_50km = get_bounds(self.transect_50km)
-
+        # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
+        # bboxes of the transect : To cut the DEM
+        self.bbox = get_bounds(self.transect)
         self.bbox_5km = get_bounds(self.transect_5km)
 
-        # CUT the WCS of the DEM with the b
+        # Get the slope over the 500m inland transect
         try:
             cut_wcs(*self.bbox, dem_layer, owsurl, self.dem)
             self.elevations, self.segments = get_elevation_profile(
-                dem=self.dem,
+                dem_path=self.dem,
                 line=change_coords(self.transect_wkt),
                 line_length=change_coords(self.transect_wkt).length,
-                outfname=self.dem_3857,
+                temp_dir=self.tmp,
             )
             # Mean slope
             self.slope, self.max_slope = calc_slope(self.elevations, self.segments)
@@ -146,6 +138,10 @@ class CHW:
             self.geology = self.db.get_closest_geology_glim(self.transect_wkt)
         except Exception:
             self.geology = None
+
+        # Check if intersect with corals 4km in the sea. Important for define geological layout and coral vegetation
+        self.corals = self.db.intersect_with_corals(self.transect_4km)
+        LOGGER.info(f"---Corals vegetation is---: {self.corals}")
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -164,17 +160,15 @@ class CHW:
         elif self.special_case_sloping_hard_rock() is True:
             self.geological_layout = "Sloping hard rock"
 
-        elif self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
+        elif self.db.intersect_with_estuaries(self.transect_4km) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
-        elif self.db.intersect_with_barrier_island(self.transect_wkt) is True or (
-            self.geology != None and self.check_barrier() is True
-        ):
+        elif self.db.intersect_with_barrier_island(self.transect_wkt) is True:
             self.geological_layout = "Barrier"
 
         elif self.geology != None:
             self.geological_layout = self.check_geology_type()
-        print("----GEOLOGICAL_LAYOUT---:", self.geological_layout)
+        LOGGER.info(f"---GEOLOGICAL_LAYOUT---: {self.geological_layout}")
 
     # 2nd level check
     def get_info_wave_exposure(self):
@@ -187,14 +181,11 @@ class CHW:
         """
         closest_coasts_10km = self.db.fetch_closest_coasts(self.transect_10km)
         closest_coasts_100km = self.db.fetch_closest_coasts(self.transect_100km)
-        # print(
-        #    f"----FETCH DEBUGGING part 1-- 10 and 100km closest coasts: {closest_coasts_10km}, {closest_coasts_100km}"
-        # )
+
         try:
             self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
         except Exception:
             self.wave_exposure = "exposed"
-        # print(f"----FETCH DEBUGGING-- Database returns: {self.wave_exposure}")
 
         if self.wave_exposure == "moderately exposed":
             if len(closest_coasts_10km) > 1:
@@ -206,8 +197,7 @@ class CHW:
 
             if len(closest_coasts_10km) > 1:
                 self.wave_exposure = "protected"
-        # print(f"----FETCH DEBUGGING-- Database returns: ")
-        # print("----WAVE EXPOSURE---:", self.wave_exposure)
+        LOGGER.info(f"---WAVE EXPOSURE---: {self.wave_exposure}")
 
     # 3rd level check
     def get_info_tidal_range(self):
@@ -215,45 +205,49 @@ class CHW:
             self.tidal_range = self.db.get_tidal_range_values(self.transect_wkt)
         except Exception:
             self.tidal_range = "any"
-        print("----TIDAL RANGE-----", self.tidal_range)
+        LOGGER.info(f"---TIDAL RANGE---: {self.tidal_range}")
 
     # 4th level check
     def get_info_flora_fauna(self):
         """
-        Retrieve information from various layers:
-            - detect mangroves
-            - detect corals (coral reefs)
-            - salt marshes
-            - overal vegetation presence
+        flora fauna can be:
+            Corals, Marsh/Mangrove, Intermittent marsh, Intermittent mangrove,
+            Mangrove/tidal flat, "Marsh/tidal flat
 
-        Returns
-        -------
-        None.
 
         """
-        # special cases
+        mangroves = self.db.intersect_with_mangroves(self.transect_wkt)
+        saltmarshes = self.db.intersect_with_saltmarshes(self.transect_wkt)
+        LOGGER.info(f"---Saltamarshes, Mangroves---: {saltmarshes}, {mangroves}")
+        # Special case of sloping soft rock
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
+        # Special case FR-17, FR-18
+        elif (
+            self.geological_layout == "Flat hard rock"
+            and self.wave_exposure == "protected"
+            and mangroves is False
+            and saltmarshes is False
+        ):
+            self.flora_fauna = "No"
         elif self.geological_layout in {
             "Sloping hard rock",
             "Flat hard rock",
             "Coral island",
         }:
-            if self.db.intersect_with_corals(self.transect_5km):
+            if self.corals:
                 self.flora_fauna = "Corals"
-            elif self.db.intersect_with_mangroves(
-                self.transect_wkt
-            ) or self.db.intersect_with_saltmarshes(self.transect_wkt):
+            elif mangroves or saltmarshes:
                 self.flora_fauna = "Marsh/mangrove"
         else:
-            if self.db.intersect_with_saltmarshes(self.transect_wkt):
+            if saltmarshes:
                 self.flora_fauna = (
                     "Intermittent marsh"
                     if self.tidal_range == "micro"
                     else "Marsh/tidal flat"
                 )
 
-            elif self.db.intersect_with_mangroves(self.transect_wkt):
+            elif mangroves:
                 self.flora_fauna = (
                     "Intermittent mangrove"
                     if self.tidal_range == "micro"
@@ -261,22 +255,19 @@ class CHW:
                 )
             else:
                 lat = self.transect["geometry"]["coordinates"][0][1]
-                print("----LAT----", lat)
                 if lat >= -25 and lat <= 25:
-                    print("---Intermittent mangrove ---")
                     self.flora_fauna = (
                         "Intermittent mangrove"
                         if self.tidal_range == "micro"
                         else "Mangrove/tidal flat"
                     )
                 else:
-                    print("---Intermittent marsh ---")
                     self.flora_fauna = (
                         "Intermittent marsh"
                         if self.tidal_range == "micro"
                         else "Marsh/tidal flat"
                     )
-        print("-----FLORA FAUNA-----", self.flora_fauna)
+        LOGGER.info(f"---FLORA FAUNA---: {self.flora_fauna}")
 
     # 5th level check
     def get_info_sediment_balance(self):
@@ -295,21 +286,20 @@ class CHW:
                 ):
                     self.sediment_balance = "Surplus"
             except Exception:
-                # NOTE Accordin to documentation of CHW, if doubts regarding the sediment balance,
+                # NOTE According to documentation of CHW, if doubts regarding the sediment balance,
                 # then always choose balance/deficit as it is the default.
                 self.sediment_balance = "Balance/Deficit"
-        print("----SEDIMENT BALANCE-----", self.sediment_balance)
+        LOGGER.info(f"---SEDIMENT BALANCE---: {self.sediment_balance}")
 
     # 6th level check
     def get_info_storm_climate(self):
-        # TODO try exception in order to prevent error in Norway. I have to check why it happens.
-        # TODO cyclone risks sometimes does not work. See when and why.
-        # NOTE there are cases where no cyclon_risk is return while there are values according to the
-        # online version of the tool.
+        """Get cyclone risk value from db"""
+
         try:
             self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
         except Exception:
             self.storm_climate = "No"
+        LOGGER.info(f"---STROM CLIMATE---: {self.storm_climate}")
 
     def hazards_classification(self):
 
@@ -337,6 +327,9 @@ class CHW:
             self.salt_water_intrusion = "None"
             self.erosion = "None"
             self.flooding = "None"
+        LOGGER.info(
+            f"-- Database result {self.ecosystem_disruption}, {self.gradual_inundation}, {self.gradual_inundation}, {self.erosion}, {self.flooding}"
+        )
 
     def provide_measures(self):
 
@@ -369,10 +362,10 @@ class CHW:
 
     def check_geology_type(self) -> str:
         """
-        Connects to database and gets the su values of geology type
+        Connects to database and gets the values of geology type
         Checks if unconsolidated sediments and carbonate sediment rocks
         values are dominant in the area
-
+        For slope check 3% limit was selected.
              Sediment plain
              Sloping soft rock
              Flat hard rock
@@ -395,124 +388,89 @@ class CHW:
         else:
             return "Sloping hard rock"
 
-    def check_barrier(self) -> bool:
-        """
-        Returns
-        -------
-        bool
-            DESCRIPTION.
-            The pattern that is used here detects 210 water value from the GlobCover dataset over a transect of 20 km.
-            In order to classify as barrier:
-                If unconsolidated values &&
-                If pattern sea-land is detected more than one time over the transect
-                If the land sea pattern is not detected far from the first sea land pattern (A way to prevent recognize as barriers
-                big (in widht) pieces of land)
-        """
-        # coast_line_id = self.db.fetch_closest_coasts(self.transect_wkt)
-        # print("---BARRIER--- FETCH--CLOSEST---COASTLINE---", coast_line_id[0][0])
-        # points = self.db.intersect_points_on_coastline(
-        #    fid=coast_line_id[0][0], wkt=self.transect_wkt
-        # )
-        # print("points --end", points)
-        # cut the globcover dataset with the bbox of the 50km transect extension
-        globcover50km = Path(self.tmp) / "globcover_50km.tif"
-        cut_wcs(*self.bbox_50km, landuse_layer, owsurl, globcover50km)
-
-        # Land use profile over the transect
-        landuse, _ = get_landuse_profile(
-            globcover50km,
-            line=change_coords(self.transect_50km),
-            line_length=change_coords(self.transect_50km).length,
-            temp=self.tmp,
-        )
-
-        # Detect sea pattern: Sea, land and land_sea
-        sea_land_pattern, land_sea_pattern = detect_sea_patterns(landuse)
-
-        # find where sea-land pattern is detected
-        sea_land_changes = np.argwhere(sea_land_pattern == True)
-        # find where the land-sea pattern is detected
-        land_sea_changes = np.argwhere(land_sea_pattern == True)
-
-        try:
-            first_sea_land_change = sea_land_changes[0][0]
-            first_land_sea_change = land_sea_changes[0][0]
-        except Exception:
-            first_sea_land_change = None
-            first_land_sea_change = None
-
-        # Check if unconsolitated values on the coast
-        #        print(
-        #            "BARRIER ",
-        #            self.geology,
-        #            self.slope,
-        #            sea_land_changes.shape[0],
-        #            first_land_sea_change,
-        #            first_sea_land_change,
-        #        )
-        if (
-            self.geology == "su"
-            and self.slope < 3
-            and sea_land_changes.shape[0] > 1
-            and (
-                first_land_sea_change - first_sea_land_change < 10
-            )  # 9*300 = meter width
-        ):
-            barrier = True
-        elif (
-            self.db.intersect_with_saltmarshes(self.transect_50km)
-            and self.slope < 3
-            and sea_land_changes.shape[0] > 1
-            and (
-                first_land_sea_change - first_sea_land_change < 10
-            )  # 9*300 = 1200 meter width
-        ):
-            barrier = True
-        else:
-            barrier = False
-        return barrier
-
     def get_vegetation(self):
-        """check vegetation with slope 200m inland
-        if slope >30% then too steep to have vegetation
         """
-        # Max slope
+        In that case vegetation values can be:
+            -Not vegetatied
+            -Vegetated
+        The vegetation value is estimated by calculating the slope of
+        a transect that extends 200 m inland
+        """
+
         slope = calc_slope_200m_inland(self.elevations, self.segments)
-        print("SLOPE VEGETATION-----", slope)
+        LOGGER.info(f"---SLOPE 200 m inland---: {slope}")
         if slope >= 30:
             return "Not vegetated"
         else:
             return "Vegetated"
 
     def check_coral_islands(self):
-        try:
+        """Cut the wcs with a bbox of 5km:
+           5km bbox is considered as a good sample to estimate the slope of
+           the whole island
+           We calculate median slope for coral island check.
+           if something goes wrong with cutting the DEM then the slope is set to 0
 
+
+        In order to be classified as coral island all the following statements should be true:
+            if intersect with corals inland and in the sea
+            if it is an island
+            if the median elevation is <2: this limit was selected with testing
+        Returns:
+            Boolean
+        """
+        try:
             cut_wcs(*self.bbox_5km, dem_layer, owsurl, self.dem_5km2)
             self.median_elevation = median_elevation(self.dem_5km2)
         except Exception:
             self.median_elevation = 0
+        LOGGER.info(f"---Mean elevation 5km bbox---: {self.median_elevation}")
+        LOGGER.info(
+            f"-- Corals check {self.db.intersect_with_corals(self.transect_8km)},   {self.db.intersect_with_island(self.transect_wkt)}, {self.corals}, {self.median_elevation}"
+        )
         if (
             self.db.intersect_with_corals(self.transect_8km)
             and self.db.intersect_with_island(self.transect_wkt)
-            and self.db.intersect_with_corals(self.transect_5km)
+            and self.corals is True
             and self.median_elevation < 2
         ):
+            LOGGER.info(
+                f"-- Corals 8km inland {self.db.intersect_with_corals(self.transect_8km)}"
+            )
             coral_island = True
         else:
             coral_island = False
         return coral_island
 
     def special_case_flat_hard_rock(self):
-        # and self.db.intersect_with_island(self.transect_wkt) is False
-        if self.db.intersect_with_corals(self.transect_5km) and self.slope < 3:
+        """In case we have coral vegetation then flat hard rock or
+        sloping hard rock geology
+
+        Returns:
+            Boolean
+        """
+        if self.corals and self.slope < 3:
             flat_hard_rock = True
         else:
             flat_hard_rock = False
         return flat_hard_rock
 
     def special_case_sloping_hard_rock(self):
-        if self.db.intersect_with_corals(self.transect_5km) and self.slope > 3:
+        """In case we have coral vegetation then flat hard rock or
+        sloping hard rock geology
+
+        Returns:
+            Boolean
+        """
+        if self.corals and self.slope >= 3:
             sloping_hard_rock = True
         else:
             sloping_hard_rock = False
         return sloping_hard_rock
+
+    def translate_hazard_danger(self):
+        self.ecosystem_disruption = translate_hazard_danger(self.ecosystem_disruption)
+        self.gradual_inundation = translate_hazard_danger(self.gradual_inundation)
+        self.salt_water_intrusion = translate_hazard_danger(self.salt_water_intrusion)
+        self.erosion = translate_hazard_danger(self.erosion)
+        self.flooding = translate_hazard_danger(self.flooding)

@@ -26,12 +26,13 @@
 # your own tools.
 
 #
-# $Keywords: $
+#
 #
 # PyWPS
 
 # http://localhost:5000/wps?request=GetCapabilities&service=WPS&version=1.0.0
 # http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw2_risk_classification
+
 
 from pywps import Process, Format
 from pywps.inout.inputs import ComplexInput, LiteralInput
@@ -120,12 +121,15 @@ class WpsChw20(Process):
             chw.provide_measures()
             # get risk information for the transect
             chw.get_risk_info()
+            # translate numbers 1,2,3,4 to low,
+            chw.translate_hazard_danger()
         except Exception:
             msg = "Something went wrong during the classification"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
 
         try:
+
             output = write_output(chw)
             response.outputs["output_json"].data = json.dumps(output)
 

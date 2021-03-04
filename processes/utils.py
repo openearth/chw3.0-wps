@@ -61,6 +61,19 @@ def create_temp_dir(dir):
     return tmpdir
 
 
+def translate_hazard_danger(hazard):
+    if hazard != "None":
+        if hazard == 1:
+            hazard = "Low"
+        elif hazard == 2:
+            hazard = "Moderate"
+        elif hazard == 3:
+            hazard = "High"
+        elif hazard == 4:
+            hazard = "Very High"
+    return hazard
+
+
 def write_output(chw):
     output = [
         {
@@ -70,18 +83,18 @@ def write_output(chw):
                     "title": "CHW information layers",
                     "info": {
                         "Geological layout": chw.geological_layout,
-                        "Wave exposure": chw.wave_exposure,
-                        "Tidal range": chw.tidal_range,
+                        "Wave exposure": chw.wave_exposure.capitalize(),
+                        "Tidal range": chw.tidal_range.capitalize(),
                         "Flora fauna": chw.flora_fauna,
                         "Sediment balance": chw.sediment_balance,
                         "Storm climate": chw.storm_climate,
+                        "slope": chw.slope,
                     },
                 },
                 {
                     "title": "Coastal environment",
                     "info": {
                         "code": chw.code,
-                        "slope": chw.slope,
                         "Ecosystem disruption": chw.ecosystem_disruption,
                         "Gradual inundation": chw.gradual_inundation,
                         "Salt water intrusion": chw.salt_water_intrusion,
