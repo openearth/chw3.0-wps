@@ -277,14 +277,6 @@ class DB:
         sediment_balance: str,
         storm_climate: str,
     ):
-        logging.info(
-            f"""geological_layout:{geological_layout}
-            wave_exposure: {wave_exposure}
-            tidal_range: {tidal_range}
-            flora_fauna: {flora_fauna}
-            sediment_balance: {sediment_balance}
-            storm_climate: {storm_climate}"""
-        )
         query = f"""SELECT code, ecosystem_disruption, gradual_inundation, salt_water_intrusion, erosion, flooding
                     FROM chw.decision_wheel
                     WHERE geological_layout = '{geological_layout}' and

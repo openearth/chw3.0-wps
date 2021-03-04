@@ -40,7 +40,6 @@ import logging
 from pathlib import Path
 from .db_utils import DB
 
-
 from .raster_utils import (
     calc_slope,
     cut_wcs,
@@ -48,7 +47,7 @@ from .raster_utils import (
     median_elevation,
     calc_slope_200m_inland,
 )
-from .utils import create_temp_dir, read_config
+from .utils import create_temp_dir, read_config, translate_hazard_danger
 from .vector_utils import change_coords, geojson_to_wkt, get_bounds
 
 service_path = Path(__file__).resolve().parent
@@ -140,6 +139,10 @@ class CHW:
         except Exception:
             self.geology = None
 
+        # Check if intersect with corals 4km in the sea. Important for define geological layout and coral vegetation
+        self.corals = self.db.intersect_with_corals(self.transect_4km)
+        LOGGER.info(f"---Corals vegetation is---: {self.corals}")
+
     # 1st level check
     def get_info_geological_layout(self):
         """Priority check of geological layout.
@@ -157,7 +160,7 @@ class CHW:
         elif self.special_case_sloping_hard_rock() is True:
             self.geological_layout = "Sloping hard rock"
 
-        elif self.db.intersect_with_estuaries(self.transect_wkt) and self.slope < 3:
+        elif self.db.intersect_with_estuaries(self.transect_4km) and self.slope < 3:
             self.geological_layout = "Delta/ low estuary island"
 
         elif self.db.intersect_with_barrier_island(self.transect_wkt) is True:
@@ -213,29 +216,38 @@ class CHW:
 
 
         """
+        mangroves = self.db.intersect_with_mangroves(self.transect_wkt)
+        saltmarshes = self.db.intersect_with_saltmarshes(self.transect_wkt)
+        LOGGER.info(f"---Saltamarshes, Mangroves---: {saltmarshes}, {mangroves}")
         # Special case of sloping soft rock
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
+        # Special case FR-17, FR-18
+        elif (
+            self.geological_layout == "Flat hard rock"
+            and self.wave_exposure == "protected"
+            and mangroves is False
+            and saltmarshes is False
+        ):
+            self.flora_fauna = "No"
         elif self.geological_layout in {
             "Sloping hard rock",
             "Flat hard rock",
             "Coral island",
         }:
-            if self.db.intersect_with_corals(self.transect_4km):
+            if self.corals:
                 self.flora_fauna = "Corals"
-            elif self.db.intersect_with_mangroves(
-                self.transect_wkt
-            ) or self.db.intersect_with_saltmarshes(self.transect_wkt):
+            elif mangroves or saltmarshes:
                 self.flora_fauna = "Marsh/mangrove"
         else:
-            if self.db.intersect_with_saltmarshes(self.transect_wkt):
+            if saltmarshes:
                 self.flora_fauna = (
                     "Intermittent marsh"
                     if self.tidal_range == "micro"
                     else "Marsh/tidal flat"
                 )
 
-            elif self.db.intersect_with_mangroves(self.transect_wkt):
+            elif mangroves:
                 self.flora_fauna = (
                     "Intermittent mangrove"
                     if self.tidal_range == "micro"
@@ -274,7 +286,7 @@ class CHW:
                 ):
                     self.sediment_balance = "Surplus"
             except Exception:
-                # NOTE Accordin to documentation of CHW, if doubts regarding the sediment balance,
+                # NOTE According to documentation of CHW, if doubts regarding the sediment balance,
                 # then always choose balance/deficit as it is the default.
                 self.sediment_balance = "Balance/Deficit"
         LOGGER.info(f"---SEDIMENT BALANCE---: {self.sediment_balance}")
@@ -287,6 +299,7 @@ class CHW:
             self.storm_climate = self.db.get_cyclone_risk(self.transect_wkt)
         except Exception:
             self.storm_climate = "No"
+        LOGGER.info(f"---STROM CLIMATE---: {self.storm_climate}")
 
     def hazards_classification(self):
 
@@ -314,6 +327,9 @@ class CHW:
             self.salt_water_intrusion = "None"
             self.erosion = "None"
             self.flooding = "None"
+        LOGGER.info(
+            f"-- Database result {self.ecosystem_disruption}, {self.gradual_inundation}, {self.gradual_inundation}, {self.erosion}, {self.flooding}"
+        )
 
     def provide_measures(self):
 
@@ -408,12 +424,19 @@ class CHW:
             self.median_elevation = median_elevation(self.dem_5km2)
         except Exception:
             self.median_elevation = 0
+        LOGGER.info(f"---Mean elevation 5km bbox---: {self.median_elevation}")
+        LOGGER.info(
+            f"-- Corals check {self.db.intersect_with_corals(self.transect_8km)},   {self.db.intersect_with_island(self.transect_wkt)}, {self.corals}, {self.median_elevation}"
+        )
         if (
             self.db.intersect_with_corals(self.transect_8km)
             and self.db.intersect_with_island(self.transect_wkt)
-            and self.db.intersect_with_corals(self.transect_4km)
+            and self.corals is True
             and self.median_elevation < 2
         ):
+            LOGGER.info(
+                f"-- Corals 8km inland {self.db.intersect_with_corals(self.transect_8km)}"
+            )
             coral_island = True
         else:
             coral_island = False
@@ -426,7 +449,7 @@ class CHW:
         Returns:
             Boolean
         """
-        if self.db.intersect_with_corals(self.transect_4km) and self.slope < 3:
+        if self.corals and self.slope < 3:
             flat_hard_rock = True
         else:
             flat_hard_rock = False
@@ -439,8 +462,15 @@ class CHW:
         Returns:
             Boolean
         """
-        if self.db.intersect_with_corals(self.transect_4km) and self.slope >= 3:
+        if self.corals and self.slope >= 3:
             sloping_hard_rock = True
         else:
             sloping_hard_rock = False
         return sloping_hard_rock
+
+    def translate_hazard_danger(self):
+        self.ecosystem_disruption = translate_hazard_danger(self.ecosystem_disruption)
+        self.gradual_inundation = translate_hazard_danger(self.gradual_inundation)
+        self.salt_water_intrusion = translate_hazard_danger(self.salt_water_intrusion)
+        self.erosion = translate_hazard_danger(self.erosion)
+        self.flooding = translate_hazard_danger(self.flooding)
