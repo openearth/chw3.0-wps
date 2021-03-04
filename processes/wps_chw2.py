@@ -26,12 +26,13 @@
 # your own tools.
 
 #
-# $Keywords: $
+# 
 #
 # PyWPS
 
 # http://localhost:5000/wps?request=GetCapabilities&service=WPS&version=1.0.0
 # http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw2_risk_classification
+
 
 from pywps import Process, Format
 from pywps.inout.inputs import ComplexInput, LiteralInput

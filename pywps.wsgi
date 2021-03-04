@@ -72,7 +72,6 @@ def hello():
 
 @application.route("/wps", methods=["GET", "POST"])
 def wps():
-
     return service
 
 
