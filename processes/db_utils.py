@@ -352,52 +352,30 @@ class DB:
         cursor.close()
         return transect
 
-    def ST_line_extend(
-        self, wkt, transect_length=0, P=False, dist=0, crs=4326, direction=-180
-    ):
-        """Extends the transect based on a given length, to either 180 or -180 direction
+    def ST_line_extend(self, wkt, dist=0, crs=4326, direction=-180):
+        """Extends the transect based on a given dist, to either 180 or -180 direction
 
         Args:
-            wkt
-            transect_length (int, optional): [description]. Defaults to 0.
-            P (bool, optional): [description]. Defaults to False.
-            dist (int, optional): [description]. Defaults to 0.
-            crs (int, optional): [description]. Defaults to 4326.
-            direction (int, optional): [description]. Defaults to -180.
+            wkt: Input line at eps
+            dist :  Defaults to 0 . to be extended to.
+            crs : Crs of the transect. Defaults to 4326.
+            direction :  -180 to be extended in the sea, 180 to be extended in land.
 
         Returns:
-            [type]: [description]
+            line: extended line. Start point coast, End point either sea or land.
         """
         transect = f"ST_GeomFromText('{wkt}', {crs})"
+        P1 = f"ST_StartPoint({transect})"
+        P2 = f"ST_EndPoint({transect})"
         if direction == -180:
-
-            P1 = f"ST_EndPoint({transect})"
-            P2 = f"ST_StartPoint({transect})"
-            azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
-            if P:
-                P2 = f"ST_GeomFromText('{P}', {crs})"
-
-            extension_length = transect_length + dist
-            projection = f"ST_Project({P2}, {extension_length}, {azimuth})"
-
-            query = (
-                f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
-            )
-
+            azimuth = f"ST_Azimuth({P2}::geometry,{P1}::geometry)"
         elif direction == 180:
-            P1 = f"ST_StartPoint({transect})"
-            P2 = f"ST_EndPoint({transect})"
             azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
 
-            if P:
-                P2 = f"ST_GeomFromText('{P}', {crs})"
+        extension_length = dist
+        projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
 
-            extension_length = transect_length + dist
-            projection = f"ST_Project({P2}, {extension_length}, {azimuth})"
-
-            query = (
-                f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
-            )
+        query = f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
 
         cursor = self.connection.cursor()
         cursor.execute(query)
