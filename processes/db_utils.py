@@ -375,13 +375,13 @@ class DB:
             P2 = f"ST_StartPoint({transect})"
             azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
             if P:
-                P1 = f"ST_GeomFromText('{P}', {crs})"
+                P2 = f"ST_GeomFromText('{P}', {crs})"
 
             extension_length = transect_length + dist
-            projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
+            projection = f"ST_Project({P2}, {extension_length}, {azimuth})"
 
             query = (
-                f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
+                f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
             )
 
         elif direction == 180:
@@ -390,13 +390,13 @@ class DB:
             azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
 
             if P:
-                P1 = f"ST_GeomFromText('{P}', {crs})"
+                P2 = f"ST_GeomFromText('{P}', {crs})"
 
             extension_length = transect_length + dist
-            projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
+            projection = f"ST_Project({P2}, {extension_length}, {azimuth})"
 
             query = (
-                f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
+                f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
             )
 
         cursor = self.connection.cursor()
