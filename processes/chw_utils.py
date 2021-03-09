@@ -160,14 +160,16 @@ class CHW:
         elif self.special_case_sloping_hard_rock() is True:
             self.geological_layout = "Sloping hard rock"
 
-        elif self.db.intersect_with_estuaries(self.transect_4km) and self.slope < 3:
-            self.geological_layout = "Delta/ low estuary island"
-
         elif self.db.intersect_with_barrier_island(self.transect_wkt) is True:
             self.geological_layout = "Barrier"
 
+        elif self.db.intersect_with_estuaries(self.transect_4km) and self.slope <= 4:
+            self.geological_layout = "Delta/ low estuary island"
+
         elif self.geology != None:
             self.geological_layout = self.check_geology_type()
+        else:
+            self.geological_layout = self.special_case_hard_rock()
         LOGGER.info(f"---GEOLOGICAL_LAYOUT---: {self.geological_layout}")
 
     # 2nd level check
@@ -385,6 +387,17 @@ class CHW:
         elif self.geology not in unconsol and self.slope <= 3:
             return "Flat hard rock"
 
+        else:
+            return "Sloping hard rock"
+
+    def special_case_hard_rock(self):
+
+        """In case no corals, no barriers, no delta low estuary and no geology is retrieved
+        then we assume that the geological layout will be either flat hard rock or sloping hard rock.
+        """
+        LOGGER.info(f"---Special case hard rock---")
+        if self.slope <= 3:
+            return "Flat hard rock"
         else:
             return "Sloping hard rock"
 
