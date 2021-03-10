@@ -273,6 +273,9 @@ class CHW:
 
     # 5th level check
     def get_info_sediment_balance(self):
+        """For the cases of flat hard rock and sloping hard rock the sediment balance is estimated by the presence or not of a beach
+        Sediment balance can be surplus when the shoreline change is medium or high and when the change rate is >0.5.
+        Surplus only when seawards (see documentation)"""
 
         if self.geological_layout in {"Flat hard rock", "Sloping hard rock"}:
             beach = self.db.intersect_with_osm_beaches(self.transect_wkt)
@@ -284,7 +287,7 @@ class CHW:
             try:
                 if (
                     self.db.get_shorelinechange_values(self.transect_wkt) != "Low"
-                    and self.db.get_sediment_changerate_values(self.transect_wkt) > 0
+                    and self.db.get_sediment_changerate_values(self.transect_wkt) > 0.5
                 ):
                     self.sediment_balance = "Surplus"
             except Exception:
