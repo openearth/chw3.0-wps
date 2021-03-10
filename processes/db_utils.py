@@ -461,7 +461,7 @@ class DB:
         cursor.close()
         return beach
 
-    def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=15000):
+    def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=25000):
         """
         check for closest geology glim values from
         the database table geollayout.glim
