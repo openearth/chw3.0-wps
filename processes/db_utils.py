@@ -557,12 +557,11 @@ class DB:
         cursor.close()
         return points
 
-    def intersect_with_barrier_island(self, wkt, crs=4326):
-        """coast.usgs_islands
+    def intersect_with_barriers_sandspits(self, wkt, crs=4326):
+        """coast.barriers_sandspits
         Args:
-            wkt (str): [description]
-            crs (int): [description]
-
+            wkt (str): Transect
+            crs (int): crs of transect, default to 4326
 
         Returns:
             bool: True if intersects, false if not
@@ -570,11 +569,11 @@ class DB:
 
         query = f"""SELECT EXISTS(
                     SELECT 1 
-                    FROM coast.usgs_islands
-                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs})) and barrier = True
+                    FROM coast.barriers_sandspits
+                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs})) 
                 )"""
         cursor = self.connection.cursor()
         cursor.execute(query)
-        island = cursor.fetchone()[0]
+        barriers_sandspits = cursor.fetchone()[0]
         cursor.close()
-        return island
+        return barriers_sandspits
