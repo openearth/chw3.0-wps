@@ -160,7 +160,7 @@ class CHW:
         elif self.special_case_sloping_hard_rock() is True:
             self.geological_layout = "Sloping hard rock"
 
-        elif self.db.intersect_with_barrier_island(self.transect_wkt) is True:
+        elif self.db.intersect_with_barriers_sandspits(self.transect_wkt) is True:
             self.geological_layout = "Barrier"
 
         elif self.db.intersect_with_estuaries(self.transect_4km) and self.slope <= 4:
