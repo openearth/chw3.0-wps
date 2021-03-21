@@ -91,11 +91,6 @@ class CHW:
         # 4km to the sea: To check if corals vegetation exist
         # 10km and -180 from the coast: To check if intersects coastline (wave exposure)
         # 100km and -180 from the coast: To check if intersects coastline (wave exposure)
-        self.transect_8km = self.db.ST_line_extend(
-            wkt=self.transect_wkt,
-            dist=8000,
-            direction=180,
-        )
         self.transect_5km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=5000,
@@ -104,6 +99,11 @@ class CHW:
         self.transect_4km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=4000,
+            direction=-180,
+        )
+        self.transect_6km = self.db.ST_line_extend(
+            wkt=self.transect_wkt,
+            dist=6000,
             direction=-180,
         )
         self.transect_10km = self.db.ST_line_extend(
@@ -131,17 +131,21 @@ class CHW:
             self.slope, self.max_slope = calc_slope(self.elevations, self.segments)
             self.slope = round(self.slope, 3)
         except Exception:
-            print("SLOPE Exception: if it is not feasible to cut the dem")
             self.slope = 0.00
 
         try:
-            self.geology = self.db.get_closest_geology_glim(self.transect_wkt)
+            self.geology = self.db.get_geology_value(self.transect_wkt)
         except Exception:
             self.geology = None
-
         # Check if intersect with corals 4km in the sea. Important for define geological layout and coral vegetation
-        self.corals = self.db.intersect_with_corals(self.transect_4km)
+        self.corals = self.db.intersect_with_corals(self.transect_6km)
         LOGGER.info(f"---Corals vegetation is---: {self.corals}")
+        self.geology_material = (
+            "unconsolidated"
+            if self.geology in ["su", "fluvisol", "wb"]
+            else "consolidated"
+        )
+        LOGGER.info(f"---geology material is---: {self.geology_material}")
 
     # 1st level check
     def get_info_geological_layout(self):
@@ -160,10 +164,18 @@ class CHW:
         elif self.special_case_sloping_hard_rock() is True:
             self.geological_layout = "Sloping hard rock"
 
-        elif self.db.intersect_with_barriers_sandspits(self.transect_wkt) is True:
+        elif (
+            self.db.intersect_with_barriers_sandspits(self.transect_wkt) is True
+            and self.geology_material == "unconsolidated"
+            and self.slope <= 4
+        ):
             self.geological_layout = "Barrier"
 
-        elif self.db.intersect_with_estuaries(self.transect_4km) and self.slope <= 4:
+        elif (
+            self.db.intersect_with_estuaries(self.transect_4km)
+            and self.geology_material == "unconsolidated"
+            and self.slope <= 4
+        ):
             self.geological_layout = "Delta/ low estuary island"
 
         elif self.geology != None:
@@ -181,8 +193,16 @@ class CHW:
         or to protected (<10 km closest coastline that protects it).
         If moderately exposed it can drop to protected(<10 km closest coastline that protects it)
         """
+        coastline_id = float(self.transect["properties"]["coastline_id"])
         closest_coasts_10km = self.db.fetch_closest_coasts(self.transect_10km)
+
         closest_coasts_100km = self.db.fetch_closest_coasts(self.transect_100km)
+
+        # Check if coastline_id is in the list of closest coasts (fix accuracy error that way)
+        if coastline_id not in closest_coasts_10km:
+            closest_coasts_10km.append(coastline_id)
+        if coastline_id not in closest_coasts_100km:
+            closest_coasts_100km.append(coastline_id)
 
         try:
             self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
@@ -278,11 +298,15 @@ class CHW:
         Surplus only when seawards (see documentation)"""
 
         if self.geological_layout in {"Flat hard rock", "Sloping hard rock"}:
-            beach = self.db.intersect_with_osm_beaches(self.transect_wkt)
-            if beach is True:
-                self.sediment_balance = "Beach"
-            else:
+            try:
+                beach = self.db.intersect_with_osm_beaches(self.transect_wkt)
+                if beach is True:
+                    self.sediment_balance = "Beach"
+                else:
+                    self.sediment_balance = "No Beach"
+            except Exception:
                 self.sediment_balance = "No Beach"
+
         else:
             try:
                 if (
@@ -368,7 +392,7 @@ class CHW:
     def check_geology_type(self) -> str:
         """
         Connects to database and gets the values of geology type
-        Checks if unconsolidated sediments and carbonate sediment rocks
+        Checks if unconsolidated material
         values are dominant in the area
         For slope check 3% limit was selected.
              Sediment plain
@@ -379,15 +403,13 @@ class CHW:
             str: The name of the geology type
         """
 
-        unconsol = ["su", "sc"]
-
-        if self.geology in unconsol and self.slope <= 3:
+        if self.geology_material == "unconsolidated" and self.slope <= 3:
             return "Sediment plain"
 
-        elif self.geology in unconsol and self.slope > 3:
+        elif self.geology_material == "unconsolidated" and self.slope > 3:
             return "Sloping soft rock"
 
-        elif self.geology not in unconsol and self.slope <= 3:
+        elif self.geology_material == "consolidated" and self.slope <= 3:
             return "Flat hard rock"
 
         else:
@@ -440,19 +462,12 @@ class CHW:
             self.median_elevation = median_elevation(self.dem_5km2)
         except Exception:
             self.median_elevation = 0
-        LOGGER.info(f"---Mean elevation 5km bbox---: {self.median_elevation}")
-        LOGGER.info(
-            f"-- Corals check {self.db.intersect_with_corals(self.transect_8km)},   {self.db.intersect_with_island(self.transect_wkt)}, {self.corals}, {self.median_elevation}"
-        )
+
         if (
-            self.db.intersect_with_corals(self.transect_8km)
-            and self.db.intersect_with_island(self.transect_wkt)
+            self.db.intersect_with_small_island(self.transect_wkt)
             and self.corals is True
             and self.median_elevation < 2
         ):
-            LOGGER.info(
-                f"-- Corals 8km inland {self.db.intersect_with_corals(self.transect_8km)}"
-            )
             coral_island = True
         else:
             coral_island = False
