@@ -50,7 +50,7 @@ from .utils import write_output
 import time
 
 
-class WpsChw20(Process):
+class WpsCoastalHazardWheel(Process):
     def __init__(self):
         # Input [in json format ]
         inputs = [
@@ -71,15 +71,18 @@ class WpsChw20(Process):
             )
         ]
 
-        super(WpsChw20, self).__init__(
+        super(WpsCoastalHazardWheel, self).__init__(
             self._handler,
-            identifier="chw2_risk_classification",
-            version="2.0",
+            identifier="chw_risk_classification",
+            version="3.0",
             title="Risk classification of a coastline.",
             abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 
                         trigger to derive data from global datasets and re-classifies this data to classes that are input for a process that follows the CHW approach to classify the potenital risk of a coast line.""",
             profile="",
-            metadata=[Metadata("WpsChw2_0"), Metadata("Chw2_0/risk_classification")],
+            metadata=[
+                Metadata("WpsCoastalHazardWheel"),
+                Metadata("WpsCoastalHazardWheel/risk_classification"),
+            ],
             inputs=inputs,
             outputs=outputs,
             store_supported=False,
@@ -88,52 +91,53 @@ class WpsChw20(Process):
 
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
-        try:
+        # try:
 
-            line_str = request.inputs["transect"][0].data
-            line_geojson = geojson.loads(line_str)
+        line_str = request.inputs["transect"][0].data
+        line_geojson = geojson.loads(line_str)
+        # coastline_id = request.inputs["coastline_id"][0].data
 
-            chw = CHW(line_geojson)
+        chw = CHW(line_geojson)
 
-            # 1st level check
-            chw.get_info_geological_layout()
-            # 2nd level check
-            chw.get_info_wave_exposure()
-            # 3rd level check
-            chw.get_info_tidal_range()
-            # 4th level check
-            chw.get_info_flora_fauna()
-            # 5th level check
-            chw.get_info_sediment_balance()
-            # 6th level check
-            chw.get_info_storm_climate()
+        # 1st level check
+        chw.get_info_geological_layout()
+        # 2nd level check
+        chw.get_info_wave_exposure()
+        # 3rd level check
+        chw.get_info_tidal_range()
+        # 4th level check
+        chw.get_info_flora_fauna()
+        # 5th level check
+        chw.get_info_sediment_balance()
+        # 6th level check
+        chw.get_info_storm_climate()
 
-        except Exception:
-            msg = "Failed during retrieving the information"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+        # except Exception:
+        # msg = "Failed during retrieving the information"
+        # res = {"errMsg": msg}
+        # response.outputs["output_json"].data = json.dumps(res)
 
-        try:
+        # try:
 
-            # classify hazards according to coastalhazardwheel decision tree
-            chw.hazards_classification()
-            # get measures
-            chw.provide_measures()
-            # get risk information for the transect
-            chw.get_risk_info()
-            # translate numbers 1,2,3,4 to low,
-            chw.translate_hazard_danger()
-        except Exception:
-            msg = "Something went wrong during the classification"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+        # classify hazards according to coastalhazardwheel decision tree
+        chw.hazards_classification()
+        # get measures
+        chw.provide_measures()
+        # get risk information for the transect
+        chw.get_risk_info()
+        # translate numbers 1,2,3,4 to low,
+        chw.translate_hazard_danger()
+        # except Exception:
+        # msg = "Something went wrong during the classification"
+        # res = {"errMsg": msg}
+        # response.outputs["output_json"].data = json.dumps(res)
 
-        try:
+        # try:
 
-            output = write_output(chw)
-            response.outputs["output_json"].data = json.dumps(output)
+        output = write_output(chw)
+        response.outputs["output_json"].data = json.dumps(output)
 
-        except Exception:
-            msg = "Failed to write the output"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+    # except Exception:
+    #   msg = "Failed to write the output"
+    #   res = {"errMsg": msg}
+    #   response.outputs["output_json"].data = json.dumps(res)

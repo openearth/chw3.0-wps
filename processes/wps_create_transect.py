@@ -44,7 +44,7 @@ import geojson
 
 from .utils import read_config
 from .db_utils import DB
-from .vector_utils import geojson_to_wkt, wkt_geometry, change_coords
+from .vector_utils import geojson_to_wkt, wkt_geometry
 
 
 class WpsCreateTransect(Process):
@@ -52,8 +52,8 @@ class WpsCreateTransect(Process):
         # Input [in json format ]
         inputs = [
             ComplexInput(
-                identifier="point",
-                title="point",
+                identifier="sea_point",
+                title="sea_point",
                 supported_formats=[Format("application/json")],
                 abstract="Complex input abstract",
             )
@@ -72,8 +72,8 @@ class WpsCreateTransect(Process):
             self._handler,
             identifier="create_transect",
             version="1.0",
-            title="Create perpedicular transect on a coast line",
-            abstract="""Creates perpedicular line on a coast line from a given point. Checks also if the given point is 
+            title="Creates a transect 500 m inland from the coastline.",
+            abstract="""Creates a transect 500 m inland from the closest point of the coastline, of a point in the sea. Checks also if the given point is 
             in the sea or on the land""",
             profile="",
             metadata=[
@@ -89,31 +89,36 @@ class WpsCreateTransect(Process):
     def _handler(self, request, response):
         """Handler function of the WpsCreateTransect"""
 
-        try:
-            host, user, password, db, _, _, _, _ = read_config()
-            db = DB(user, password, host, db)
+        # try:
+        host, user, password, db, _, _, _, _ = read_config()
+        db = DB(user, password, host, db)
 
-            # Read input
-            point_str = request.inputs["point"][0].data
-            # load geojson
-            point_geojson = geojson.loads(point_str)
-            point_wkt = geojson_to_wkt(point_geojson)
+        # Read input
+        sea_point_as_str = request.inputs["sea_point"][0].data
+        # load geojson
+        sea_point_as_geojson = geojson.loads(sea_point_as_str)
+        sea_point_as_wkt = geojson_to_wkt(sea_point_as_geojson)
+        # Checks if the point is inside a land polygon, if yes then it returns a message
+        # to
+        if db.point_in_landpolygon(sea_point_as_wkt):
+            output = {"errMsg": "Please select a point on the sea"}
+            response.outputs["output_json"].data = json.dumps(output)
+        else:
+            coastline_point, coastline_id = db.closest_point_of_coastline(
+                sea_point_as_wkt
+            )
+            transect = db.create_transect_in_coast(
+                sea_point_as_wkt, coastline_point, 500
+            )
+            # prepare the output. Send the transect as a geosjon.
+            geom = wkt_geometry(transect)
+            output = {
+                "transect_coordinates": geom["coordinates"],
+                "coastline_id": coastline_id,
+            }
+            response.outputs["output_json"].data = json.dumps(output)
 
-            if db.point_in_landpolygon(point_wkt):
-                output = {"errMsg": "Please select a point on the sea"}
-                response.outputs["output_json"].data = json.dumps(output)
-            else:
-
-                point_on_coast = db.point_on_coast(point_wkt)
-                coast_transect = db.create_coast_transect(
-                    point_wkt, point_on_coast, 500
-                )
-
-                geom = wkt_geometry(coast_transect)
-                output = {"transect_coordinates": geom["coordinates"]}
-                response.outputs["output_json"].data = json.dumps(output)
-
-        except Exception:
-            msg = "Something went wrong, try again"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+        # except Exception:
+        # msg = "Something went wrong, try again"
+        # res = {"errMsg": msg}
+        # response.outputs["output_json"].data = json.dumps(res)
