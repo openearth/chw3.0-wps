@@ -65,10 +65,12 @@ class DB:
                     FROM coast.estuaries
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        estuaries = cursor.fetchone()[0]
-        cursor.close()
+
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            estuaries = cursor.fetchone()[0]
+            cursor.close()
         return estuaries
 
     def intersect_with_corals(self, wkt, crs=4326) -> bool:
@@ -87,10 +89,11 @@ class DB:
                     FROM vegetation.corals
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        corals = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            corals = cursor.fetchone()[0]
+            cursor.close()
         return corals
 
     def intersect_with_mangroves(self, wkt, crs=4326) -> bool:
@@ -109,10 +112,11 @@ class DB:
                     FROM vegetation.mangroves
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        mangroves = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            mangroves = cursor.fetchone()[0]
+            cursor.close()
         return mangroves
 
     def intersect_with_saltmarshes(self, wkt, crs=4326) -> str:
@@ -132,10 +136,11 @@ class DB:
                     FROM vegetation.saltmarshes
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        saltmarshes = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            saltmarshes = cursor.fetchone()[0]
+            cursor.close()
         return saltmarshes
 
     def get_wave_exposure_value(self, wkt, crs=4326, dist=1):
@@ -153,10 +158,11 @@ class DB:
                     ORDER BY ST_Distance(geom, 
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        wave_exposure = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            wave_exposure = cursor.fetchone()[0]
+            cursor.close()
         return wave_exposure
 
     def get_tidal_range_values(self, wkt, crs=4326, dist=1):
@@ -175,10 +181,11 @@ class DB:
                     ORDER BY ST_Distance(geom, 
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        tidal_range = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            tidal_range = cursor.fetchone()[0]
+            cursor.close()
         return tidal_range
 
     def get_sediment_changerate_values(self, wkt, crs=4326, dist=1):
@@ -240,11 +247,11 @@ class DB:
                     ORDER BY ST_Distance(geom, 
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
-        cursor = self.connection.cursor()
-
-        cursor.execute(query)
-        cyclone_risk = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            cyclone_risk = cursor.fetchone()[0]
+            cursor.close()
         return cyclone_risk
 
     def fetch_closest_coasts(self, wkt, crs=4326):
@@ -262,10 +269,12 @@ class DB:
         query = f"""SELECT fid
                 FROM coast.osm_coastline
                 WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))"""  # LINESTRING wkt
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        coast_lines = cursor.fetchall()
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            # coast_lines = cursor.fetchall()
+            coast_lines = [r[0] for r in cursor.fetchall()]
+            cursor.close()
         return coast_lines
 
     def get_classes(
@@ -285,11 +294,11 @@ class DB:
                         '{flora_fauna}' = ANY(flora_fauna) and
                         '{sediment_balance}' = ANY(sediment_balance) and
                         '{storm_climate}' = ANY(storm_climate);"""
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        classes = cursor.fetchone()
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            classes = cursor.fetchone()
+            cursor.close()
         return classes
 
     def get_measures(self, code):
@@ -300,10 +309,11 @@ class DB:
                     JOIN management.measures ms on ms.mid = mo.mid
                     WHERE code = '{code}') as opt
                     GROUP BY opt.hazard;"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        measures = cursor.fetchall()
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            measures = cursor.fetchall()
+            cursor.close()
         return measures
 
     def point_in_landpolygon(self, wkt, crs=4326):
@@ -322,35 +332,12 @@ class DB:
                     FROM coast.osm_landpolygon
                     WHERE ST_Contains(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 );"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        point_inland = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            point_inland = cursor.fetchone()[0]
+            cursor.close()
         return point_inland
-
-    def create_transect_to_coast(self, wkt, crs=4326):
-        """coast.osm_landpolygon
-        Args:
-            wkt: str
-            crs: int
-
-
-        Returns:
-            line: GeoJson
-        """
-        query = f"""SELECT ST_AsText(ST_MakeLine(
-                           ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs})),
-                                           ST_GeomFromText(\'{wkt}\', {crs})))
-                    FROM (SELECT geom
-                    FROM coast.osm_coastline
-                    WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
-                    ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
-                """
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        transect = cursor.fetchone()[0]
-        cursor.close()
-        return transect
 
     def ST_line_extend(self, wkt, dist=0, crs=4326, direction=-180):
         """Extends the transect based on a given dist, to either 180 or -180 direction
@@ -376,31 +363,31 @@ class DB:
         projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
 
         query = f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        line = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            line = cursor.fetchone()[0]
+            cursor.close()
         return line
 
     # wkt = transect
-    def point_on_coast(self, wkt, crs=4326):
+    def closest_point_of_coastline(self, wkt, crs=4326):
 
         """"""
-        query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs})))            
-                    FROM (SELECT geom
+        query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs}))), fid            
+                    FROM (SELECT *
                     FROM coast.osm_coastline
                     WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
                     ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
                 """
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            point, coastline_id = cursor.fetchall()[0]
+            cursor.close()
+        return point, coastline_id
 
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        point = cursor.fetchone()[0]
-        cursor.close()
-        return point
-
-    def create_coast_transect(self, point_on_sea, point_on_coast, dist, crs=4326):
+    def create_transect_in_coast(self, point_on_sea, point_on_coast, dist, crs=4326):
 
         P1 = f"ST_GeomFromText('{point_on_sea}', {crs})"
         P2 = f"ST_GeomFromText('{point_on_coast}', {crs})"
@@ -410,10 +397,11 @@ class DB:
         projection = f"ST_Project({P2}, {dist}, {azimuth})"
 
         query = f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        transect = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            transect = cursor.fetchone()[0]
+            cursor.close()
         return transect
 
     def get_gar_pop_values(self, wkt, crs=4326, dist=1):
@@ -429,12 +417,13 @@ class DB:
                     ORDER BY ST_Distance(wkb_geometry, 
                                         ST_GeomFromText(\'{wkt}\', {crs})) 
                     LIMIT 1;"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        tot = cursor.fetchone()
-        gar = float(tot[0])
-        pop = float(tot[1])
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            tot = cursor.fetchone()
+            gar = float(tot[0])
+            pop = float(tot[1])
+            cursor.close()
         return gar, pop
 
     def intersect_with_osm_beaches(self, wkt, crs=4326) -> str:
@@ -454,11 +443,12 @@ class DB:
                     FROM coast.osm_beach
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                 )"""
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        beach = cursor.fetchone()[0]
-        cursor.close()
+        # With the with keyword, Python automatically releases the resources. It also provides error handling.
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            beach = cursor.fetchone()[0]
+            cursor.close()
         return beach
 
     def get_closest_geology_glim(self, wkt, crs=4326, db_crs=3857, dist=25000):
@@ -510,6 +500,44 @@ class DB:
         cursor.close()
         return geology_values
 
+    def get_geology_value(self, wkt, crs=4326, db_crs=3857, dist=25000):
+        """
+        check for closest geology glim values from
+        the database table geollayout.glim
+        in a buffer of 15000m
+
+        Get values in a buffer, sort them by distance
+        and gets the closest one.
+        """
+        query = f"""
+        SELECT
+            CASE
+                WHEN ((SELECT count(*)
+                        FROM geollayout.fluvisols
+                        WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))) != 0 )
+        THEN 'fluvisol'
+        ELSE (SELECT xx as glim
+              FROM geollayout.glim
+              WHERE ST_DWithin(shape, 
+                        ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}), {dist})
+              ORDER BY ST_Distance(shape,
+                ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
+              LIMIT 1)
+        END
+        """
+
+        # try:
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            geology = cursor.fetchone()[0]
+            cursor.close()
+
+        # except Exception:
+        # geology = None
+
+        return geology
+
     def intersect_with_island(self, wkt, crs=4326):
         """coast.usgs_islands
         Args:
@@ -526,36 +554,36 @@ class DB:
                     FROM coast.usgs_islands
                     WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs})) 
                 )"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        island = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            island = cursor.fetchone()[0]
+            cursor.close()
         return island
 
-    def intersect_points_on_coastline(self, fid, wkt, crs=4326, buffer=0.02):
-        """coast.osm_coastline
+    def intersect_with_small_island(self, wkt, crs=4326):
+        """coast.usgs_islands
+        the small island is defined as an island with area < 25km2
         Args:
-            wkt (str): [description]
-            crs (int): [description]
+            wkt :
+            crs :
 
 
         Returns:
-           Points that buffer of the first point of the transect, intersects the coastline
+            bool: True if intersects, false if not
         """
 
-        query = f"""SELECT ST_AsText(ST_StartPoint(I.st_intersection)), ST_AsText(ST_EndPoint(I.st_intersection))
-                    FROM (SELECT ST_Intersection(
-                        ST_Buffer(ST_StartPoint(ST_GeomFromText(\'{wkt}\', {crs})),{buffer}),L.geom)
-                    FROM (SELECT geom
-                        FROM coast.osm_coastline 
-                    WHERE fid = {fid}) AS L) AS I;
+        query = f"""SELECT EXISTS(
+                    SELECT 1 
+                    FROM coast.usgs_islands
+                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))and islandarea < 25
                 )"""
-
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        points = cursor.fetchone()[0]
-        cursor.close()
-        return points
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            small_island = cursor.fetchone()[0]
+            cursor.close()
+        return small_island
 
     def intersect_with_barriers_sandspits(self, wkt, crs=4326):
         """coast.barriers_sandspits
@@ -572,8 +600,9 @@ class DB:
                     FROM coast.barriers_sandspits
                     WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs})) 
                 )"""
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        barriers_sandspits = cursor.fetchone()[0]
-        cursor.close()
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            barriers_sandspits = cursor.fetchone()[0]
+            cursor.close()
         return barriers_sandspits
