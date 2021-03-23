@@ -80,21 +80,21 @@ def write_output(chw):
             "title": "Hazards",
             "info": [
                 {
-                    "title": "CHW information layers",
+                    "title": "Coastal classification layers",
                     "info": {
                         "Geological layout": chw.geological_layout,
                         "Wave exposure": chw.wave_exposure.capitalize(),
                         "Tidal range": chw.tidal_range.capitalize(),
-                        "Flora fauna": chw.flora_fauna,
+                        "Flora/fauna": chw.flora_fauna,
                         "Sediment balance": chw.sediment_balance,
                         "Storm climate": chw.storm_climate,
-                        "slope": chw.slope,
+                        "slope %": chw.slope,
                     },
                 },
                 {
                     "title": "Coastal environment",
                     "info": {
-                        "code": chw.code,
+                        "Coastal code": chw.code,
                         "Ecosystem disruption": chw.ecosystem_disruption,
                         "Gradual inundation": chw.gradual_inundation,
                         "Salt water intrusion": chw.salt_water_intrusion,
