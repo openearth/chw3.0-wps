@@ -129,7 +129,7 @@ class CHW:
             )
             # Mean slope
             self.slope, self.max_slope = calc_slope(self.elevations, self.segments)
-            self.slope = round(self.slope, 3)
+            self.slope = round(self.slope, 1)
         except Exception:
             self.slope = 0.00
 

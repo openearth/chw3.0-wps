@@ -421,10 +421,11 @@ class DB:
             cursor = self.connection.cursor()
             cursor.execute(query)
             tot = cursor.fetchone()
+            print("gar, pop", tot)
             gar = float(tot[0])
             pop = float(tot[1])
             cursor.close()
-        return gar, pop
+        return int(gar), int(pop)  # round(self.slope, 1)
 
     def intersect_with_osm_beaches(self, wkt, crs=4326) -> str:
         """
@@ -514,17 +515,19 @@ class DB:
             CASE
                 WHEN ((SELECT count(*)
                         FROM geollayout.fluvisols
-                        WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))) != 0 )
+                        WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))) != 0 )
         THEN 'fluvisol'
         ELSE (SELECT xx as glim
               FROM geollayout.glim
               WHERE ST_DWithin(shape, 
                         ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}), {dist})
+                        AND xx NOT IN ('wb')
               ORDER BY ST_Distance(shape,
                 ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
-              LIMIT 1)
+              LIMIT 1) 
         END
         """
+        print("query fluvisols", query)
 
         # try:
         with self.connection:
