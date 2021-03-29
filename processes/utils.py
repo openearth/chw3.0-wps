@@ -88,7 +88,7 @@ def write_output(chw):
                         "Flora/fauna": chw.flora_fauna,
                         "Sediment balance": chw.sediment_balance,
                         "Storm climate": chw.storm_climate,
-                        "slope %": chw.slope,
+                        "Slope %": chw.slope,
                     },
                 },
                 {
@@ -112,7 +112,7 @@ def write_output(chw):
                     "info": {
                         "Distance to measurement point": "No data",
                         "Population": chw.population,
-                        "Capital stock at closest GAR point": chw.gar,
+                        "Capital stock at closest GAR point ($)": chw.gar,
                         "Key roads within 100m of the coast": "No data",
                     },
                 }
