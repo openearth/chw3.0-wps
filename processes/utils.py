@@ -112,7 +112,7 @@ def write_output(chw):
                     "info": {
                         "Distance to measurement point": "No data",
                         "Population": chw.population,
-                        "Capital stock at closest GAR point ($)": chw.gar,
+                        "Capital stock at closest GAR point (M $)": chw.gar,
                         "Key roads within 100m of the coast": "No data",
                     },
                 }
