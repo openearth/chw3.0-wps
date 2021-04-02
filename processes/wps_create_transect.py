@@ -118,6 +118,6 @@ class WpsCreateTransect(Process):
                 response.outputs["output_json"].data = json.dumps(output)
 
         except Exception:
-            msg = "Something went wrong, try again"
+            msg = "Please click closer to the coast"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)

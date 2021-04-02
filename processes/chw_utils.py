@@ -91,6 +91,7 @@ class CHW:
         # 4km to the sea: To check if corals vegetation exist
         # 10km and -180 from the coast: To check if intersects coastline (wave exposure)
         # 100km and -180 from the coast: To check if intersects coastline (wave exposure)
+        #TODO rename the transect in a way to be clear if they are inland or to the sea
         self.transect_5km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=5000,
@@ -111,6 +112,9 @@ class CHW:
         )
         self.transect_100km = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=100000, direction=-180
+        )
+        self.transect_200m = self.db.ST_line_extend(
+            wkt=self.transect_wkt, dist=200, direction=-180
         )
 
         # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
@@ -296,13 +300,17 @@ class CHW:
         """For the cases of flat hard rock and sloping hard rock the sediment balance is estimated by the presence or not of a beach
         Sediment balance can be surplus when the shoreline change is medium or high and when the change rate is >0.5.
         Surplus only when seawards (see documentation)"""
-
+        # TODO perhaps write it more clear.
         if self.geological_layout in {"Flat hard rock", "Sloping hard rock"}:
+            beach = False
             try:
-                beach = self.db.intersect_with_osm_beaches(self.transect_wkt)
+                if (self.db.intersect_with_osm_beaches(self.transect_wkt)) or (
+                    self.db.intersect_with_osm_beaches(self.transect_200m)
+                ):
+                    beach = True
                 if beach is True:
                     self.sediment_balance = "Beach"
-                else:
+                elif beach is False:
                     self.sediment_balance = "No Beach"
             except Exception:
                 self.sediment_balance = "No Beach"
