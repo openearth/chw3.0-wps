@@ -255,19 +255,19 @@ class DB:
         return cyclone_risk
 
     def fetch_closest_coasts(self, wkt, crs=4326):
-        """coast.osm_coastline
+        """coast.osm_segment1000m
         values to expect: coasts ids
 
         Args:
-            wkt ([type]): [description]
-            crs (int, optional): [description]. Defaults to 4326.
+            wkt :
+            crs : . Defaults to 4326.
 
         Returns:
-            [type]: [description]
+            coast line ids
         """
         # extend line for searching for closest coasts
-        query = f"""SELECT fid
-                FROM coast.osm_coastline
+        query = f"""SELECT gid
+                FROM coast.osm_segment1000m
                 WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))"""  # LINESTRING wkt
         with self.connection:
             cursor = self.connection.cursor()
@@ -373,10 +373,21 @@ class DB:
     # wkt = transect
     def closest_point_of_coastline(self, wkt, crs=4326):
 
-        """"""
-        query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs}))), fid            
+        """Find the closest point of the coastline from the given point of the user
+           Returns also the coastline id.
+
+        Returns:
+           Closets point and coastline id
+           #NOTE the coastline id is returned from the create_transect process and
+           # is an input at the coastal_hazard_wheel process in order to correct accuracy errors during fetch
+
+           #NOTE Replace osm_coastline with osm_segment1000m (sometimes during fetch one coastline was so
+           # long resulting to same id during extension)
+        """
+
+        query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs}))), gid            
                     FROM (SELECT *
-                    FROM coast.osm_coastline
+                    FROM coast.osm_segment1000m
                     WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
                     ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
                 """
@@ -527,17 +538,11 @@ class DB:
               LIMIT 1) 
         END
         """
-        print("query fluvisols", query)
-
-        # try:
         with self.connection:
             cursor = self.connection.cursor()
             cursor.execute(query)
             geology = cursor.fetchone()[0]
             cursor.close()
-
-        # except Exception:
-        # geology = None
 
         return geology
 
