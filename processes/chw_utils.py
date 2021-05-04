@@ -46,9 +46,11 @@ from .raster_utils import (
     get_elevation_profile,
     median_elevation,
     calc_slope_200m_inland,
+    read_raster_values,
 )
 from .utils import create_temp_dir, read_config, translate_hazard_danger
 from .vector_utils import change_coords, geojson_to_wkt, get_bounds
+import numpy as np
 
 service_path = Path(__file__).resolve().parent
 host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
@@ -79,6 +81,7 @@ class CHW:
         self.dem = Path(self.tmp) / "dem.tif"
         self.dem_5km2 = Path(self.tmp) / "dem_5km2.tif"
         self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
+        self.globcover = Path(self.tmp) / "glocover.tif"
 
         self.transect_wkt = geojson_to_wkt(self.transect)
         LOGGER.info(f"---Input transect---: {self.transect_wkt}")
@@ -91,7 +94,7 @@ class CHW:
         # 4km to the sea: To check if corals vegetation exist
         # 10km and -180 from the coast: To check if intersects coastline (wave exposure)
         # 100km and -180 from the coast: To check if intersects coastline (wave exposure)
-        #TODO rename the transect in a way to be clear if they are inland or to the sea
+        # TODO rename the transect in a way to be clear if they are inland or to the sea
         self.transect_5km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=5000,
@@ -116,6 +119,9 @@ class CHW:
         self.transect_200m = self.db.ST_line_extend(
             wkt=self.transect_wkt, dist=200, direction=-180
         )
+        self.transect_100m = self.db.ST_line_extend(
+            wkt=self.transect_wkt, dist=100, direction=-180
+        )
 
         # TODO add extra meters to the bbox to prevent cases that the bbox is parallel.
         # bboxes of the transect : To cut the DEM
@@ -136,7 +142,7 @@ class CHW:
             self.slope = round(self.slope, 1)
         except Exception:
             self.slope = 0.00
-
+        LOGGER.info(f"SLOPE: {self.slope}")
         try:
             self.geology = self.db.get_geology_value(self.transect_wkt)
         except Exception:
@@ -158,8 +164,14 @@ class CHW:
         there is coral vegetation in the area, then delta/low estaury islands, barriers and
         finally geology type check.
         """
+        # TODO check_river_mouth
+        if (
+            self.db.intersect_with_small_estuaries(self.transect_wkt)
+            or self.db.intersect_with_small_estuaries(self.transect_100m)
+        ) and self.slope <= 4:
+            self.geological_layout = "Tidal inlet/sand spit/river mouth"
 
-        if self.check_coral_islands() is True:
+        elif self.check_coral_islands() is True:
             self.geological_layout = "Coral island"
 
         elif self.special_case_flat_hard_rock() is True:
@@ -176,7 +188,10 @@ class CHW:
             self.geological_layout = "Barrier"
 
         elif (
-            self.db.intersect_with_estuaries(self.transect_4km)
+            (
+                self.db.intersect_with_estuaries(self.transect_100m)
+                or self.db.intersect_with_estuaries(self.transect_wkt)
+            )
             and self.geology_material == "unconsolidated"
             and self.slope <= 4
         ):
@@ -230,7 +245,7 @@ class CHW:
         try:
             self.tidal_range = self.db.get_tidal_range_values(self.transect_wkt)
         except Exception:
-            self.tidal_range = "any"
+            self.tidal_range = "micro"
         LOGGER.info(f"---TIDAL RANGE---: {self.tidal_range}")
 
     # 4th level check
@@ -441,14 +456,34 @@ class CHW:
             -Vegetated
         The vegetation value is estimated by calculating the slope of
         a transect that extends 200 m inland
+
+        Sparse (< 15%) vegetation -> 150/ Artificial surfaces -> 190 / Bare areas -> 200 / Permanent snow and ice -> 220
         """
 
         slope = calc_slope_200m_inland(self.elevations, self.segments)
+
         LOGGER.info(f"---SLOPE 200 m inland---: {slope}")
-        if slope >= 30:
-            return "Not vegetated"
-        else:
+
+        cut_wcs(
+            *self.bbox,
+            landuse_layer,
+            owsurl,
+            self.globcover,
+        )
+        values = read_raster_values(self.globcover)
+
+        snow_ice = np.count_nonzero(values == 220)
+        bare_areas = np.count_nonzero(values == 200)
+        artificial_surfaces = np.count_nonzero(values == 190)
+        sparce = np.count_nonzero(values == 150)
+        globcover_category_a = snow_ice + bare_areas + artificial_surfaces + sparce
+        globcover_category_b = values.size - globcover_category_a
+
+        if slope < 30 and (globcover_category_b >= globcover_category_a):
             return "Vegetated"
+
+        else:
+            return "Not vegetated"
 
     def check_coral_islands(self):
         """Cut the wcs with a bbox of 5km:
@@ -459,9 +494,9 @@ class CHW:
 
 
         In order to be classified as coral island all the following statements should be true:
-            if intersect with corals inland and in the sea
+            if intersect with corals
             if it is an island
-            if the median elevation is <2: this limit was selected with testing
+            if the median elevation is <2: this limit was selected via testing
         Returns:
             Boolean
         """
