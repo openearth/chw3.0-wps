@@ -63,7 +63,31 @@ class DB:
         query = f"""SELECT EXISTS(
                     SELECT 1 
                     FROM coast.estuaries
-                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs})) and area_km2 > 50
+                )"""
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            estuaries = cursor.fetchone()[0]
+            cursor.close()
+
+        return estuaries
+
+    def intersect_with_small_estuaries(self, wkt, crs=4326) -> bool:
+        """coast.estuaries Small estuaries are considered estuaries with area <50km
+        Args:
+            wkt: str
+            crs: int
+
+
+        Returns:
+            bool: True if intersects, false if not
+        """
+
+        query = f"""SELECT EXISTS(
+                    SELECT 1 
+                    FROM coast.estuaries
+                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs})) and area_km2 < 50
                 )"""
 
         with self.connection:
@@ -76,8 +100,8 @@ class DB:
     def intersect_with_corals(self, wkt, crs=4326) -> bool:
         """vegetation.corals
         Args:
-            wkt (str): [description]
-            crs (int): [description]
+            wkt (str):
+            crs (int):
 
 
         Returns:
@@ -100,11 +124,11 @@ class DB:
         """
         vegetation.mangroves
         Args:
-            wkt ([type]): [description]
-            crs ([type]): [description]
+            wkt ([type]):
+            crs ([type]):
 
         Returns:
-            bool: [description]
+            bool:
         """
 
         query = f"""SELECT EXISTS(
@@ -123,12 +147,12 @@ class DB:
         """
         vegetation.saltmarshes
         Args:
-            wkt ([type]): [description]
-            crs ([type]): [description]
-            db_epsg ([type]): [description]
+            wkt ([type]):
+            crs ([type]):
+            db_epsg ([type]):
 
         Returns:
-            Any: [description]
+            Any:
         """
 
         query = f"""SELECT EXISTS(
@@ -442,12 +466,12 @@ class DB:
         """
         coast.osm_beach
         Args:
-            wkt ([type]): [description]
-            crs ([type]): [description]
-            db_epsg ([type]): [description]
+            wkt ([type]):
+            crs ([type]):
+            db_epsg ([type]):
 
         Returns:
-            Any: [description]
+            Any:
         """
 
         query = f"""SELECT EXISTS(
@@ -549,8 +573,8 @@ class DB:
     def intersect_with_island(self, wkt, crs=4326):
         """coast.usgs_islands
         Args:
-            wkt (str): [description]
-            crs (int): [description]
+            wkt (str):
+            crs (int):
 
 
         Returns:
@@ -576,7 +600,6 @@ class DB:
             wkt :
             crs :
 
-
         Returns:
             bool: True if intersects, false if not
         """
@@ -584,7 +607,7 @@ class DB:
         query = f"""SELECT EXISTS(
                     SELECT 1 
                     FROM coast.usgs_islands
-                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs}))and islandarea < 25
+                    WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs})) and islandarea < 25
                 )"""
         with self.connection:
             cursor = self.connection.cursor()
