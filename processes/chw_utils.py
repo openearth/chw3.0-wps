@@ -226,7 +226,7 @@ class CHW:
         try:
             self.wave_exposure = self.db.get_wave_exposure_value(self.transect_wkt)
         except Exception:
-            self.wave_exposure = "exposed"
+            self.wave_exposure = "moderately exposed"
 
         if self.wave_exposure == "moderately exposed":
             if len(closest_coasts_10km) > 1:
