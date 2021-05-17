@@ -31,10 +31,6 @@ import psycopg2
 from typing import List
 import logging
 
-# host, user, password, db, port, _, _, _ = read_config()
-# connection = psycopg2.connect(user=user, password=password, host=host, database=db)
-# cursor = connection.cursor()
-
 
 class DB:
     def __init__(self, user, password, host, db):
@@ -124,8 +120,8 @@ class DB:
         """
         vegetation.mangroves
         Args:
-            wkt ([type]):
-            crs ([type]):
+            wkt: str
+            crs: int
 
         Returns:
             bool:
@@ -147,9 +143,9 @@ class DB:
         """
         vegetation.saltmarshes
         Args:
-            wkt ([type]):
-            crs ([type]):
-            db_epsg ([type]):
+            wkt: str
+            crs: int
+            db_epsg :
 
         Returns:
             Any:
@@ -284,7 +280,7 @@ class DB:
 
         Args:
             wkt :
-            crs : . Defaults to 4326.
+            crs : Defaults to 4326.
 
         Returns:
             coast line ids
@@ -466,9 +462,9 @@ class DB:
         """
         coast.osm_beach
         Args:
-            wkt ([type]):
-            crs ([type]):
-            db_epsg ([type]):
+            wkt :
+            crs :
+            db_epsg :
 
         Returns:
             Any:

@@ -64,9 +64,9 @@ def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
     """Tranforms a raster to another epsg, writes the new raster in the temp dir
 
     Args:
-        in_file (str, optional): [description]. Defaults to "temp".
-        dst_crs (str, optional): [description]. Defaults to "EPSG:3857".
-        out_file (str, optional): [description]. Defaults to "temp".
+        in_file (str, optional):  Defaults to "temp".
+        dst_crs (str, optional):  Defaults to "EPSG:3857".
+        out_file (str, optional):  Defaults to "temp".
     """
 
     with rasterio.open(infname) as src:
@@ -98,12 +98,12 @@ def line_segmentation(line, line_length, step):
     """Returns the transect in segments
 
     Args:
-        line ([type]): [description]
-        line_length ([type]): [description]
-        step ([type]): [description]
+        line :
+        line_length :
+        step :
 
     Returns:
-        [type]: [description]
+       segments, points
     """
     segments = [segment for segment in range(0, int(line_length), step)]
 
@@ -116,7 +116,6 @@ def line_segmentation(line, line_length, step):
     return segments, points
 
 
-
 def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
     """Returns elevation values over the transect with a step eqaul to the resolution of the raster
 
@@ -125,19 +124,17 @@ def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
         line: transect at epsg:3857
         line_length: transect length
         temp_dir: the unique temp directory to store it
-        step (int, optional): 
+        step (int, optional):
     #NOTE the step is a parameter and can be adjusted according to the raster.
     #TODO a suggestin of @Gerrit is to read the resolution from the raster instead of providing it
     Returns:
         elevations, segments
     """
 
-    
     # reproject raster Epsg:3857
     dem_reproject_path = Path(temp_dir) / "dem_3857.tif"
     segments, points = line_segmentation(line, line_length, step)
     reproject_raster(dem_path, dem_reproject_path)
-
 
     # sample the raster over the transect
     with rasterio.open(dem_reproject_path) as dst:
@@ -155,7 +152,14 @@ def calc_slope(
     elevations,
     segments,
 ):
-    # print("elev", elevations, segments)
+    """Calculates the slope over a transect.
+
+    Args:
+        elevations
+        segments
+    Returns:
+        mean and max slope
+    """
     try:
         # Replace nan with 0
         y = np.array(elevations)
@@ -218,16 +222,16 @@ def calc_slope_200m_inland(
     elevations,
     segments,
 ):
-    """[summary]
+    """Same function as the calc_slope. Calculates the slope over a transect of 200m
 
     Args:
-        elevations ([type]): [description]
-        segments ([type]): [description]
+        elevations
+        segments
 
     Returns:
-        [type]: [description]
-    """    
-    # print("elev", elevations, segments)
+        max_slope
+    """
+
     try:
         # Replace nan with 0
         y = np.array(elevations)
@@ -235,15 +239,12 @@ def calc_slope_200m_inland(
 
         x = np.array(segments)
         inland_200 = (np.argwhere(x < 300).shape)[0]
-        print("inland", inland_200)
 
         x = x[:inland_200]
-        # print("x", x)
         y = y[:inland_200]
-        # print("y", y)
+
         # slope of every segment
         m = np.diff(y) / np.diff(x)
-        # print("m", m)
 
         # detect change of slope (negative to positive and reverse)
         msign = np.sign(m)
@@ -290,22 +291,6 @@ def calc_slope_200m_inland(
         max_slope = 0.00
 
     return max_slope
-
-
-def detect_sea_patterns(landuse_values):
-    # The globcover dataset is very coarse dataset (300m)
-    # We want alwasy the first point of the transect to be on the sea
-    if landuse_values[0] != 210:
-        landuse_values[0] = 210
-    # print("land_use before pattern", [i for i in landuse_values])
-    landuse_array = np.array(landuse_values)
-    landuse_array = np.where(landuse_array == 210, "sea", "land")
-    # print("land_use after np where", [i for i in landuse_array])
-
-    sea_land_pattern = detect_pattern(["sea", "land"], landuse_array)
-    land_sea_pattern = detect_pattern(["land", "sea"], landuse_array)
-
-    return sea_land_pattern, land_sea_pattern
 
 
 def read_raster_values(file):
