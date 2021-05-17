@@ -169,7 +169,7 @@ class CHW:
             self.db.intersect_with_small_estuaries(self.transect_wkt)
             or self.db.intersect_with_small_estuaries(self.transect_100m)
         ) and self.slope <= 4:
-            self.geological_layout = "Tidal inlet/sand spit/river mouth"
+            self.geological_layout = "River mouth"
 
         elif self.check_coral_islands() is True:
             self.geological_layout = "Coral island"
