@@ -125,6 +125,6 @@ class WpsCoastalHazardWheel(Process):
             response.outputs["output_json"].data = json.dumps(output)
 
         except Exception:
-            msg = "Failed to write the output"
+            msg = "Please check server log"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)
