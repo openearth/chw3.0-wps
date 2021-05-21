@@ -336,7 +336,7 @@ class DB:
             cursor.close()
         return measures
 
-    def point_in_landpolygon(self, wkt, crs=4326):
+    def area_not_supported(self, wkt, crs=4326):
         """coast.osm_landpolygon
         Args:
             wkt: str
@@ -346,16 +346,14 @@ class DB:
         Returns:
             bool: True if point in a land polygon, false if not
         """
-
-        query = f"""SELECT EXISTS(
-                    SELECT 1
+        query = f"""
+                    SELECT 'Please choose a point in sea'
                     FROM coast.osm_landpolygon
                     WHERE ST_Contains(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                     UNION
-                    SELECT 1
+                    SELECT 'This is a special case and CHW methodology does not yield a coastal classification'
                     FROM coast.excludedregions
-                    WHERE st_contains(geom,st_transform(ST_GeomFromText(\'{wkt}\', {crs}),3857))
-                );"""
+                    WHERE st_contains(geom,st_transform(ST_GeomFromText(\'{wkt}\', {crs}),3857));"""
         with self.connection:
             cursor = self.connection.cursor()
             cursor.execute(query)
