@@ -355,11 +355,14 @@ class DB:
                     FROM coast.excludedregions
                     WHERE st_contains(geom,st_transform(ST_GeomFromText(\'{wkt}\', {crs}),3857));"""
         with self.connection:
-            cursor = self.connection.cursor()
-            cursor.execute(query)
-            point_inland = cursor.fetchone()[0]
-            cursor.close()
-        return point_inland
+            try:
+                cursor = self.connection.cursor()
+                cursor.execute(query)
+                non_supported = cursor.fetchone()[0]
+                cursor.close()
+            except:
+                non_supported = False
+        return non_supported
 
     def ST_line_extend(self, wkt, dist=0, crs=4326, direction=-180):
         """Extends the transect based on a given dist, to either 180 or -180 direction
