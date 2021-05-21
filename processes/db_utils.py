@@ -163,7 +163,7 @@ class DB:
             cursor.close()
         return saltmarshes
 
-    def get_wave_exposure_value(self, wkt, crs=4326, dist=1):
+    def get_wave_exposure_value(self, wkt, crs=4326, dist=1.5):
         """ocean.wave_exposure
         values to expect from database:
             exposed
@@ -185,7 +185,7 @@ class DB:
             cursor.close()
         return wave_exposure
 
-    def get_tidal_range_values(self, wkt, crs=4326, dist=1):
+    def get_tidal_range_values(self, wkt, crs=4326, dist=1.5):
         """ocean.tidal_range
         values to expect:
         micro
@@ -351,6 +351,10 @@ class DB:
                     SELECT 1
                     FROM coast.osm_landpolygon
                     WHERE ST_Contains(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                    UNION
+                    SELECT 1
+                    FROM coast.excludedregions
+                    WHERE st_contains(geom,st_transform(ST_GeomFromText(\'{wkt}\', {crs}),3857))
                 );"""
         with self.connection:
             cursor = self.connection.cursor()
@@ -452,7 +456,6 @@ class DB:
             cursor = self.connection.cursor()
             cursor.execute(query)
             tot = cursor.fetchone()
-            print("gar, pop", tot)
             gar = float(tot[0])
             pop = float(tot[1])
             cursor.close()
@@ -552,7 +555,7 @@ class DB:
               FROM geollayout.glim
               WHERE ST_DWithin(shape, 
                         ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}), {dist})
-                        AND xx NOT IN ('wb')
+                        AND xx NOT IN ('wb', 'nd')
               ORDER BY ST_Distance(shape,
                 ST_Transform(ST_GeomFromText(\'{wkt}\', {crs}), {db_crs}))
               LIMIT 1) 
