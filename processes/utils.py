@@ -29,7 +29,10 @@
 import configparser
 from pathlib import Path
 import tempfile
+import shutil
+import logging
 
+LOGGER = logging.getLogger("PYWPS")
 
 service_path = Path(__file__).resolve().parent
 
@@ -59,6 +62,13 @@ def create_temp_dir(dir):
     # Temporary folder setup
     tmpdir = tempfile.mkdtemp(dir=dir)
     return tmpdir
+
+
+def delete_tmp_dir(dir):
+    try:
+        shutil.rmtree(dir)
+    except OSError as e:
+        LOGGER.info(f"Error: {dir} : {e.sterror}")
 
 
 def translate_hazard_danger(hazard):
