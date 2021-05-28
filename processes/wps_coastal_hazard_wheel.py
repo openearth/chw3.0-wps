@@ -26,8 +26,8 @@
 # your own tools.
 
 #
-#
-#
+# Abstract: Classifies a coast according to the coastal hazard wheel classification method.
+#           Inputs to the process are a transect in the coast.
 # PyWPS
 
 # http://localhost:5000/wps?request=GetCapabilities&service=WPS&version=1.0.0
@@ -46,7 +46,7 @@ import geojson
 from pathlib import Path
 
 from .chw_utils import CHW
-from .utils import write_output
+from .utils import write_output, delete_tmp_dir
 import time
 
 
@@ -119,12 +119,14 @@ class WpsCoastalHazardWheel(Process):
             # get risk information for the transect
             chw.get_risk_info()
             # translate numbers 1,2,3,4 to low,
-            chw.translate_hazard_danger()
+            chw.translate_hazard_danger()  # TODO Remove this function and translate the numbers directly in the database
 
             output = write_output(chw)
+            # TODO remove tmp folder.
+            delete_tmp_dir(chw.tmp)
             response.outputs["output_json"].data = json.dumps(output)
 
         except Exception:
-            msg = "Please check server log"
+            msg = "Something went wrong, please check server log"
             res = {"errMsg": msg}
             response.outputs["output_json"].data = json.dumps(res)

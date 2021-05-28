@@ -26,7 +26,7 @@
 # your own tools.
 
 
-# $Keywords: $
+# $Abstract: Creates a 500m transectfrom a point in the sea to the closest line$
 #
 # PyWPS
 

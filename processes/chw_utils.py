@@ -70,7 +70,7 @@ class CHW:
         # Give default values to the information layers
         self.geological_layout = "Any"
         self.wave_exposure = "Any"
-        self.tidal_range = "any"
+        self.tidal_range = "any"  # TODO Why is this "any" Check the database.
         self.flora_fauna = "Any"
         self.sediment_balance = "Balance/Deficit"
         self.storm_climate = "Any"
