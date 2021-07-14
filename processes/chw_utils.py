@@ -137,12 +137,16 @@ class CHW:
                 line_length=change_coords(self.transect_wkt).length,
                 temp_dir=self.tmp,
             )
+
             # Mean slope
             self.slope, self.max_slope = calc_slope(self.elevations, self.segments)
+
             self.slope = round(self.slope, 1)
-        except Exception:
-            self.slope = 0.00
-        LOGGER.info(f"SLOPE: {self.slope}")
+        except:
+            raise Exception(
+                "There are no elevation data in the area, please try another location"
+            )
+
         try:
             self.geology = self.db.get_geology_value(self.transect_wkt)
         except Exception:

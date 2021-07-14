@@ -123,9 +123,12 @@ class WpsCoastalHazardWheel(Process):
 
             output = write_output(chw)
             # TODO remove tmp folder.
-            delete_tmp_dir(chw.tmp)
+            # delete_tmp_dir(chw.tmp)
             response.outputs["output_json"].data = json.dumps(output)
+        except Exception as e:
 
+            res = {"errMsg": f"{e}"}
+            response.outputs["output_json"].data = json.dumps(res)
         except Exception:
             msg = "Something went wrong, please check server log"
             res = {"errMsg": msg}
