@@ -351,7 +351,7 @@ class DB:
                     FROM coast.osm_landpolygon
                     WHERE ST_Contains(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                     UNION
-                    SELECT 'This is a special case and CHW methodology does not yield a coastal classification'
+                    SELECT 'This is a special case and the CHW methodology does not yield a coastal classification'
                     FROM coast.excludedregions
                     WHERE st_contains(geom,st_transform(ST_GeomFromText(\'{wkt}\', {crs}),3857));"""
         with self.connection:
