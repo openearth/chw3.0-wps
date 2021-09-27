@@ -63,12 +63,12 @@ def cut_wcs(
     return outfname
 
 
-def reproject_raster(infname, outfname):
+def reproject_raster_gda_way(infname, outfname):
     cmd = f"""gdalwarp -s_srs EPSG:4326 -t_srs EPSG:3857 {infname} {outfname}"""
     os.system(cmd)
 
 
-def reproject_raster_rasterio(infname, outfname, dst_crs="EPSG:3857"):
+def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
     """Tranforms a raster to another epsg, writes the new raster in the temp dir
 
     Args:
@@ -147,8 +147,11 @@ def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
 
     # sample the raster over the transect
     with rasterio.open(dem_reproject_path) as dst:
-        values = dst.sample(points, 1, True)
+        # print("dst", dst)
+        values = dst.sample(points, 1)
+        # print("values", values)
         elevations = [value[0] for value in values]
+        # print("elevations", elevations)
         return elevations, segments
 
 
