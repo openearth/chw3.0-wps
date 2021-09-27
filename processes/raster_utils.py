@@ -29,6 +29,8 @@
 from .wcs_utils import LS
 import logging
 import numpy as np
+
+from osgeo import gdal
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from scipy.stats import linregress
@@ -60,7 +62,21 @@ def cut_wcs(
     return outfname
 
 
-def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
+def reproject_raster(infname, outfname):
+    in_raster = gdal.Open(infname)
+    driver = "GTiff"
+    memory = 2e3
+    new_projection = """PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","3857"]]"""
+    gdal.Warp(
+        outfname,
+        in_raster,
+        dstSRS=new_projection,
+        warpMemoryLimit=memory,
+        format=driver,
+    )
+
+
+def reproject_raster_rasterio(infname, outfname, dst_crs="EPSG:3857"):
     """Tranforms a raster to another epsg, writes the new raster in the temp dir
 
     Args:
@@ -68,10 +84,11 @@ def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
         dst_crs (str, optional):  Defaults to "EPSG:3857".
         out_file (str, optional):  Defaults to "temp".
     """
-
+    src_crs = {"init": "EPSG:4326"}
+    dst_crs = {"init": "EPSG:3857"}
     with rasterio.open(infname) as src:
         transform, width, height = calculate_default_transform(
-            src.crs, dst_crs, src.width, src.height, *src.bounds
+            src_crs, dst_crs, src.width, src.height, *src.bounds
         )
         kwargs = src.meta.copy()
         kwargs.update(
@@ -83,7 +100,7 @@ def reproject_raster(infname, outfname, dst_crs="EPSG:3857"):
                     source=rasterio.band(src, i),
                     destination=rasterio.band(dst, i),
                     src_transform=src.transform,
-                    src_crs=src.crs,
+                    src_crs=src_crs,
                     dst_transform=transform,
                     dst_crs=dst_crs,
                     resampling=Resampling.nearest,
