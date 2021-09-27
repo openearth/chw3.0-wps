@@ -30,17 +30,27 @@
 from shapely.ops import transform
 import pyproj
 from pyproj import Proj
-from shapely.geometry import shape
+from shapely.geometry import shape, box
 import geojson
 from shapely import wkt
 
 
 def get_bounds(line):
+    # if hasattr(line, "geometry"):
+    # g = shape(line.geometry)
+    # else:
+    # g = wkt.loads(line)
+    # return g.bounds
     if hasattr(line, "geometry"):
         g = shape(line.geometry)
     else:
         g = wkt.loads(line)
-    return g.bounds
+    buffered_polygon = box(*g.bounds).buffer(0.003)
+    print(f" buffered polygon: {buffered_polygon}")
+    print(f" bounds of buffered polygon: {buffered_polygon.bounds}")
+    bbox = buffered_polygon.bounds
+
+    return bbox
 
 
 def geojson_to_wkt(feature):
