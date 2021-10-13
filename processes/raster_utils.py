@@ -147,11 +147,8 @@ def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
 
     # sample the raster over the transect
     with rasterio.open(dem_reproject_path) as dst:
-        # print("dst", dst)
         values = dst.sample(points, 1, True)
-        # print("values", values)
         elevations = [value[0] for value in values]
-        # print("elevations", elevations)
         return elevations, segments
 
 

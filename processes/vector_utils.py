@@ -46,8 +46,6 @@ def get_bounds(line):
     else:
         g = wkt.loads(line)
     buffered_polygon = box(*g.bounds).buffer(0.003)
-    print(f" buffered polygon: {buffered_polygon}")
-    print(f" bounds of buffered polygon: {buffered_polygon.bounds}")
     bbox = buffered_polygon.bounds
 
     return bbox
