@@ -336,7 +336,7 @@ class DB:
             cursor.close()
         return measures
 
-    def area_not_supported(self, wkt, crs=4326):
+    def find_special_areas(self, wkt, crs=4326):
         """coast.osm_landpolygon
         Args:
             wkt: str
@@ -347,22 +347,25 @@ class DB:
             bool: True if point in a land polygon, false if not
         """
         query = f"""
-                    SELECT 'Please choose a point in sea'
+                    SELECT false, 'Please choose a point in sea'
                     FROM coast.osm_landpolygon
                     WHERE ST_Contains(geom, ST_GeomFromText(\'{wkt}\', {crs}))
                     UNION
-                    SELECT 'This is a special case and the CHW methodology does not yield a coastal classification'
+                    SELECT proceed, notification
                     FROM coast.excludedregions
                     WHERE st_contains(geom,st_transform(ST_GeomFromText(\'{wkt}\', {crs}),3857));"""
         with self.connection:
             try:
                 cursor = self.connection.cursor()
                 cursor.execute(query)
-                non_supported = cursor.fetchone()[0]
+                query_result = cursor.fetchone()
+                proceed = query_result[0]
+                notification = query_result[1]
                 cursor.close()
             except:
-                non_supported = False
-        return non_supported
+                proceed = True
+                notification = None
+        return proceed, notification
 
     def ST_line_extend(self, wkt, dist=0, crs=4326, direction=-180):
         """Extends the transect based on a given dist, to either 180 or -180 direction

@@ -63,7 +63,8 @@ class CHW:
 
         # The transect will be always 500 meters inland
         self.transect = transect
-
+        # Notification message for that case
+        self.notification = self.transect["properties"]["notification"]
         # Initiate the DB class
         self.db = DB(user, password, host, db)
 
