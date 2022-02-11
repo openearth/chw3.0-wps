@@ -85,6 +85,7 @@ def translate_hazard_danger(hazard):
 
 
 def write_output(chw):
+    # TODO: Now exclamation mark is assumed to appear only in Gradual inundation. Make it configurable in the future
     output = [
         {
             "title": "Hazards",
@@ -106,7 +107,7 @@ def write_output(chw):
                     "info": {
                         "Coastal code": chw.code,
                         "Ecosystem disruption": chw.ecosystem_disruption,
-                        "Gradual inundation": chw.gradual_inundation,
+                        "Gradual inundation": f"{chw.gradual_inundation} {'!' if chw.notification else None}",
                         "Salt water intrusion": chw.salt_water_intrusion,
                         "Erosion": chw.erosion,
                         "Flooding": chw.flooding,

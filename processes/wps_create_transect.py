@@ -99,9 +99,10 @@ class WpsCreateTransect(Process):
             sea_point_as_geojson = geojson.loads(sea_point_as_str)
             sea_point_as_wkt = geojson_to_wkt(sea_point_as_geojson)
             # Checks if the point is inside a land polygon, if yes then it returns a message
-            non_supported_cases = db.area_not_supported(sea_point_as_wkt)
-            if non_supported_cases:
-                output = {"errMsg": non_supported_cases}
+            proceed, notification = db.find_special_areas(sea_point_as_wkt)
+
+            if proceed is False:
+                output = {"errMsg": notification}
                 response.outputs["output_json"].data = json.dumps(output)
             else:
                 coastline_point, coastline_id = db.closest_point_of_coastline(
@@ -115,6 +116,7 @@ class WpsCreateTransect(Process):
                 output = {
                     "transect_coordinates": geom["coordinates"],
                     "coastline_id": coastline_id,
+                    "notification": notification,
                 }
                 response.outputs["output_json"].data = json.dumps(output)
 
