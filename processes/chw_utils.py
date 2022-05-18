@@ -53,7 +53,18 @@ from .vector_utils import change_coords, geojson_to_wkt, get_bounds
 import numpy as np
 
 service_path = Path(__file__).resolve().parent
-host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
+(
+    host,
+    user,
+    password,
+    db,
+    port,
+    owsurl,
+    dem_layer,
+    landuse_layer,
+    username,
+    geoserver_password,
+) = read_config()
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -131,7 +142,14 @@ class CHW:
 
         # Get the slope over the 500m inland transect
         try:
-            cut_wcs(*self.bbox, dem_layer, owsurl, self.dem)
+            cut_wcs(
+                *self.bbox,
+                dem_layer,
+                owsurl,
+                self.dem,
+                username=username,
+                password=geoserver_password,
+            )
             self.elevations, self.segments = get_elevation_profile(
                 dem_path=self.dem,
                 line=change_coords(self.transect_wkt),

@@ -55,7 +55,9 @@ def read_config() -> tuple:
     ows_url = cf.get("GeoServer", "ows_url")
     dem = cf.get("GeoServer", "dem")
     landuse = cf.get("GeoServer", "landuse")
-    return host, user, psword, db, port, ows_url, dem, landuse
+    username = cf.get("GeoServer", "username")
+    password = cf.get("GeoServer", "password")
+    return host, user, psword, db, port, ows_url, dem, landuse, username, password
 
 
 def create_temp_dir(dir):

@@ -1,5 +1,6 @@
 import numpy as np
 from owslib.wcs import WebCoverageService
+from owslib.util import Authentication
 from shapely import wkt
 
 # TODO Check how can it be improved
@@ -7,9 +8,19 @@ from shapely import wkt
 class WCS:
     """WCS object to get metadata etc and to get grid."""
 
-    def __init__(self, host, layer):
+    def __init__(self, host, layer, username, password):
+        self.username = username
+        self.password = password
         self.id = layer
-        self.wcs = WebCoverageService(host, version="1.0.0")
+        self.wcs = (
+            WebCoverageService(
+                host,
+                version="1.0.0",
+                auth=Authentication(username=self.username, password=self.password),
+            )
+            if self.password and self.username
+            else WebCoverageService(host, version="1.0.0")
+        )
         self.layer = self.wcs[self.id]
         self.cx, self.cy = map(int, self.layer.grid.highlimits)
         self.crs = self.layer.boundingboxes[0]["nativeSrs"]
@@ -36,16 +47,32 @@ class WCS:
         f.close()
         return fn
 
+    def getw_with_auth(self, fn):
+        """Downloads raster and returns filename of written GEOTIFF in the tmp dir."""
+        gc = self.wcs.getCoverage(
+            identifier=self.id,
+            bbox=self.bbox,
+            format="GeoTIFF",
+            crs=self.crs,
+            width=self.width,
+            height=self.height,
+            auth=Authentication(username=self.username, password=self.password),
+        )
+        f = open(fn, "wb")
+        f.write(gc.read())
+        f.close()
+        return fn
+
 
 ## TO handle transects
 class LS:
     """Intersection on grid line"""
 
-    def __init__(self, awkt, crs, host, layer, sampling=1):
+    def __init__(self, awkt, crs, host, layer, username, password, sampling=1):
         self.wwkt = awkt
         self.crs = crs
         self.gs = WCS(
-            host, layer
+            host, layer, username, password
         )  # Initiates WCS service to get some parameters about the grid.
         self.sampling = sampling
 
@@ -153,5 +180,8 @@ class LS:
 
     def getraster(self, fname, all_box=False):
         """Returns values of line intersection on downlaoded geotiff from wcs."""
-        self.gs.getw(fname)
+        if self.gs.username and self.gs.password:
+            self.gs.getw_with_auth(fname)
+        else:
+            self.gs.getw(fname)
         return

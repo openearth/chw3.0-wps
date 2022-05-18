@@ -91,45 +91,45 @@ class WpsCoastalHazardWheel(Process):
 
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
-        try:
+        # try:
 
-            line_str = request.inputs["transect"][0].data
-            line_geojson = geojson.loads(line_str)
-            # coastline_id = request.inputs["coastline_id"][0].data
+        line_str = request.inputs["transect"][0].data
+        line_geojson = geojson.loads(line_str)
+        # coastline_id = request.inputs["coastline_id"][0].data
 
-            chw = CHW(line_geojson)
+        chw = CHW(line_geojson)
 
-            # 1st level check
-            chw.get_info_geological_layout()
-            # 2nd level check
-            chw.get_info_wave_exposure()
-            # 3rd level check
-            chw.get_info_tidal_range()
-            # 4th level check
-            chw.get_info_flora_fauna()
-            # 5th level check
-            chw.get_info_sediment_balance()
-            # 6th level check
-            chw.get_info_storm_climate()
+        # 1st level check
+        chw.get_info_geological_layout()
+        # 2nd level check
+        chw.get_info_wave_exposure()
+        # 3rd level check
+        chw.get_info_tidal_range()
+        # 4th level check
+        chw.get_info_flora_fauna()
+        # 5th level check
+        chw.get_info_sediment_balance()
+        # 6th level check
+        chw.get_info_storm_climate()
 
-            # classify hazards according to coastalhazardwheel decision tree
-            chw.hazards_classification()
-            # get measures
-            chw.provide_measures()
-            # get risk information for the transect
-            chw.get_risk_info()
-            # translate numbers 1,2,3,4 to low,
-            chw.translate_hazard_danger()  # TODO Remove this function and translate the numbers directly in the database
+        # classify hazards according to coastalhazardwheel decision tree
+        chw.hazards_classification()
+        # get measures
+        chw.provide_measures()
+        # get risk information for the transect
+        chw.get_risk_info()
+        # translate numbers 1,2,3,4 to low,
+        chw.translate_hazard_danger()  # TODO Remove this function and translate the numbers directly in the database
 
-            output = write_output(chw)
-            # TODO remove tmp folder.
-            # delete_tmp_dir(chw.tmp)
-            response.outputs["output_json"].data = json.dumps(output)
-        except Exception as e:
+        output = write_output(chw)
+        # TODO remove tmp folder.
+        # delete_tmp_dir(chw.tmp)
+        response.outputs["output_json"].data = json.dumps(output)
+        # except Exception as e:
 
-            res = {"errMsg": f"{e}"}
-            response.outputs["output_json"].data = json.dumps(res)
-        except Exception:
-            msg = "Something went wrong, please check server log"
-            res = {"errMsg": msg}
-            response.outputs["output_json"].data = json.dumps(res)
+        # res = {"errMsg": f"{e}"}
+        # response.outputs["output_json"].data = json.dumps(res)
+        # except Exception:
+        # msg = "Something went wrong, please check server log"
+        # res = {"errMsg": msg}
+        # response.outputs["output_json"].data = json.dumps(res)
