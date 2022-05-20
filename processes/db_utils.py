@@ -275,7 +275,7 @@ class DB:
         return cyclone_risk
 
     def fetch_closest_coasts(self, wkt, crs=4326):
-        """coast.osm_segment1000m
+        """coast.osm_segment500m
         values to expect: coasts ids
 
         Args:
@@ -287,7 +287,7 @@ class DB:
         """
         # extend line for searching for closest coasts
         query = f"""SELECT gid
-                FROM coast.osm_segment1000m
+                FROM coast.osm_segment500m
                 WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))"""  # LINESTRING wkt
         with self.connection:
             cursor = self.connection.cursor()
@@ -409,13 +409,13 @@ class DB:
            #NOTE the coastline id is returned from the create_transect process and
            # is an input at the coastal_hazard_wheel process in order to correct accuracy errors during fetch
 
-           #NOTE Replace osm_coastline with osm_segment1000m (sometimes during fetch one coastline was so
+           #NOTE Replace osm_coastline with osm_segment500m (sometimes during fetch one coastline was so
            # long resulting to same id during extension)
         """
 
         query = f"""SELECT ST_AsText(ST_ClosestPoint(closest_line.geom, ST_GeomFromText(\'{wkt}\', {crs}))), gid            
                     FROM (SELECT *
-                    FROM coast.osm_segment1000m
+                    FROM coast.osm_segment500m
                     WHERE ST_DWithin(geom, ST_GeomFromText(\'{wkt}\', {crs}), 1)
                     ORDER BY ST_Distance(geom, ST_GeomFromText(\'{wkt}\', {crs})) LIMIT 1) AS closest_line;
                 """
