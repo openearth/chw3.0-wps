@@ -37,12 +37,13 @@ LOGGER = logging.getLogger("PYWPS")
 service_path = Path(__file__).resolve().parent
 
 
-def read_config() -> tuple:
+def read_config(file_name="configuration.txt") -> tuple:
     """Reads the configuration file
     Returns:
         List with configuration
     """
-    cf_file = service_path / "configuration.txt"
+
+    cf_file = service_path / file_name
     cf = configparser.RawConfigParser()
     cf.read(cf_file)
     # POSTGIS
@@ -55,7 +56,22 @@ def read_config() -> tuple:
     ows_url = cf.get("GeoServer", "ows_url")
     dem = cf.get("GeoServer", "dem")
     landuse = cf.get("GeoServer", "landuse")
-    return host, user, psword, db, port, ows_url, dem, landuse
+    username = cf.get("GeoServer", "username")
+    password = cf.get("GeoServer", "password")
+    dem_test = cf.get("GeoServer", "dem_test")
+    return (
+        host,
+        user,
+        psword,
+        db,
+        port,
+        ows_url,
+        dem,
+        landuse,
+        dem_test,
+        username,
+        password,
+    )
 
 
 def create_temp_dir(dir):

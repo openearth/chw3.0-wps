@@ -43,8 +43,16 @@ from processes.ultimate_question import UltimateQuestion
 from processes.wps_coastal_hazard_wheel import WpsCoastalHazardWheel
 from processes.wps_create_transect import WpsCreateTransect
 
+# chw2 for testing purposes
+from processes.wps_coastal_hazard_wheel_test import WpsCoastalHazardWheelTest
+
 # TODO add the proces in the processes list
-processes = [UltimateQuestion(), WpsCoastalHazardWheel(), WpsCreateTransect()]
+processes = [
+    UltimateQuestion(),
+    WpsCoastalHazardWheel(),
+    WpsCreateTransect(),
+    WpsCoastalHazardWheelTest(),
+]
 
 # Description used in template
 process_descriptor = {}

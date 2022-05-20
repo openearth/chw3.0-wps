@@ -53,13 +53,25 @@ from .vector_utils import change_coords, geojson_to_wkt, get_bounds
 import numpy as np
 
 service_path = Path(__file__).resolve().parent
-host, user, password, db, port, owsurl, dem_layer, landuse_layer = read_config()
+(
+    host,
+    user,
+    password,
+    db,
+    port,
+    owsurl,
+    dem_layer,
+    landuse_layer,
+    dem_test_layer,
+    username,
+    geoserver_password,
+) = read_config()
 
 LOGGER = logging.getLogger("PYWPS")
 
 
 class CHW:
-    def __init__(self, transect):
+    def __init__(self, transect, testing=False):
 
         # The transect will be always 500 meters inland
         self.transect = transect
@@ -76,6 +88,7 @@ class CHW:
         self.sediment_balance = "Balance/Deficit"
         self.storm_climate = "Any"
 
+        self.dem_layer = dem_test_layer if testing else dem_layer
         # Filenames/TMP #TODO more the dem, dem_3857, glob
         # unique temp directory for every run
         self.tmp = create_temp_dir(service_path / "outputs")
@@ -131,7 +144,14 @@ class CHW:
 
         # Get the slope over the 500m inland transect
         try:
-            cut_wcs(*self.bbox, dem_layer, owsurl, self.dem)
+            cut_wcs(
+                *self.bbox,
+                self.dem_layer,
+                owsurl,
+                self.dem,
+                username=username,
+                password=geoserver_password,
+            )
             self.elevations, self.segments = get_elevation_profile(
                 dem_path=self.dem,
                 line=change_coords(self.transect_wkt),
@@ -506,7 +526,7 @@ class CHW:
             Boolean
         """
         try:
-            cut_wcs(*self.bbox_5km, dem_layer, owsurl, self.dem_5km2)
+            cut_wcs(*self.bbox_5km, self.dem_layer, owsurl, self.dem_5km2)
             self.median_elevation = median_elevation(self.dem_5km2)
         except Exception:
             self.median_elevation = 0

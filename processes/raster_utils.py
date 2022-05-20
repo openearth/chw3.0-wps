@@ -40,7 +40,17 @@ import os
 
 
 def cut_wcs(
-    xst, yst, xend, yend, layername, owsurl, outfname, crs=4326, all_box=False
+    xst,
+    yst,
+    xend,
+    yend,
+    layername,
+    owsurl,
+    outfname,
+    crs=4326,
+    all_box=False,
+    username=None,
+    password=None,
 ) -> str:
     """Implements the GetCoverage request with a given bbox from the user
     Args:
@@ -55,7 +65,7 @@ def cut_wcs(
         all_box (bool, optional): Defaults to False.
     """
     linestr = "LINESTRING ({} {}, {} {})".format(xst, yst, xend, yend)
-    ls = LS(linestr, crs, owsurl, layername)
+    ls = LS(linestr, crs, owsurl, layername, username, password)
     ls.line()
     ls.getraster(outfname, all_box=all_box)
     ls = None
@@ -135,7 +145,7 @@ def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
         temp_dir: the unique temp directory to store it
         step (int, optional):
     #NOTE the step is a parameter and can be adjusted according to the raster.
-    #TODO a suggestin of @Gerrit is to read the resolution from the raster instead of providing it
+    #TODO a suggestion of @Gerrit is to read the resolution from the raster instead of providing it
     Returns:
         elevations, segments
     """

@@ -90,7 +90,7 @@ class WpsCreateTransect(Process):
         """Handler function of the WpsCreateTransect"""
 
         try:
-            host, user, password, db, _, _, _, _ = read_config()
+            host, user, password, db, _, _, _, _, _, _, _ = read_config()
             db = DB(user, password, host, db)
 
             # Read input
