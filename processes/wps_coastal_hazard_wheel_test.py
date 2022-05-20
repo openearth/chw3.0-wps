@@ -50,7 +50,7 @@ from .utils import write_output, delete_tmp_dir
 import time
 
 
-class WpsCoastalHazardWheel(Process):
+class WpsCoastalHazardWheelTest(Process):
     def __init__(self):
         # Input [in json format ]
         inputs = [
@@ -71,9 +71,9 @@ class WpsCoastalHazardWheel(Process):
             )
         ]
 
-        super(WpsCoastalHazardWheel, self).__init__(
+        super(WpsCoastalHazardWheelTest, self).__init__(
             self._handler,
-            identifier="chw_risk_classification",
+            identifier="chw_risk_classification_test",
             version="3.0",
             title="Risk classification of a coastline.",
             abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 
@@ -81,7 +81,7 @@ class WpsCoastalHazardWheel(Process):
             profile="",
             metadata=[
                 Metadata("WpsCoastalHazardWheel"),
-                Metadata("WpsCoastalHazardWheel/risk_classification"),
+                Metadata("WpsCoastalHazardWheel/risk_classification_test"),
             ],
             inputs=inputs,
             outputs=outputs,
@@ -97,7 +97,7 @@ class WpsCoastalHazardWheel(Process):
             line_geojson = geojson.loads(line_str)
             # coastline_id = request.inputs["coastline_id"][0].data
 
-            chw = CHW(line_geojson)
+            chw = CHW(line_geojson, testing=True)
 
             # 1st level check
             chw.get_info_geological_layout()
@@ -125,7 +125,6 @@ class WpsCoastalHazardWheel(Process):
             # TODO remove tmp folder.
             # delete_tmp_dir(chw.tmp)
             response.outputs["output_json"].data = json.dumps(output)
-
         except Exception as e:
             res = {"errMsg": f"{e}"}
             response.outputs["output_json"].data = json.dumps(res)
