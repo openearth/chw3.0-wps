@@ -494,6 +494,8 @@ class CHW:
             landuse_layer,
             owsurl,
             self.globcover,
+            username=username,
+            password=geoserver_password,
         )
         values = read_raster_values(self.globcover)
 
@@ -511,6 +513,7 @@ class CHW:
             return "Not vegetated"
 
     def check_coral_islands(self):
+
         """Cut the wcs with a bbox of 5km:
            5km bbox is considered as a good sample to estimate the slope of
            the whole island
@@ -526,8 +529,18 @@ class CHW:
             Boolean
         """
         try:
-            cut_wcs(*self.bbox_5km, self.dem_layer, owsurl, self.dem_5km2)
+
+            cut_wcs(
+                *self.bbox_5km,
+                self.dem_layer,
+                owsurl,
+                self.dem_5km2,
+                username=username,
+                password=geoserver_password,
+            )
+
             self.median_elevation = median_elevation(self.dem_5km2)
+
         except Exception:
             self.median_elevation = 0
 
