@@ -1,7 +1,5 @@
 *.pyc
-workdir/*
-outputs/*
-logs/*
+logs/pywps.log
 tmp/*
 data/*
 static/*

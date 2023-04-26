@@ -39,15 +39,15 @@ from pywps.inout.inputs import ComplexInput, LiteralInput
 from pywps.inout.outputs import ComplexOutput
 from pywps.app.Common import Metadata
 
-import time
+
 import json
-import logging
+
 import geojson
 from pathlib import Path
 
 from .chw_utils import CHW
 from .utils import write_output, delete_tmp_dir
-import time
+
 
 
 class WpsCoastalHazardWheel(Process):
