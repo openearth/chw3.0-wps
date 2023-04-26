@@ -1,5 +1,4 @@
 *.pyc
-logs/pywps.log
 tmp/*
 data/*
 static/*
