@@ -135,7 +135,7 @@ def line_segmentation(line, line_length, step):
     return segments, points
 
 
-def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
+def get_elevation_profile(dem_path, line, line_length, temp_dir):
     """Returns elevation values over the transect with a step eqaul to the resolution of the raster
 
     Args:
@@ -144,19 +144,22 @@ def get_elevation_profile(dem_path, line, line_length, temp_dir, step=30):
         line_length: transect length
         temp_dir: the unique temp directory to store it
         step (int, optional):
-    #NOTE the step is a parameter and can be adjusted according to the raster.
-    #TODO a suggestion of @Gerrit is to read the resolution from the raster instead of providing it
+    
     Returns:
         elevations, segments
     """
 
     # reproject raster Epsg:3857
     dem_reproject_path = Path(temp_dir) / "dem_3857.tif"
-    segments, points = line_segmentation(line, line_length, step)
+    
     reproject_raster(dem_path, dem_reproject_path)
 
     # sample the raster over the transect
     with rasterio.open(dem_reproject_path) as dst:
+       
+
+        step = dst.res[0] / 3 #calculate the step from the resolution of the raster
+        segments, points = line_segmentation(line, line_length, int(step))
         values = dst.sample(points, 1, True)
         elevations = [value[0] for value in values]
         return elevations, segments

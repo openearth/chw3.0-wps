@@ -193,7 +193,7 @@ class CHW:
         if (
             self.db.intersect_with_small_estuaries(self.transect_wkt)
             or self.db.intersect_with_small_estuaries(self.transect_100m)
-        ) and self.slope <= 4:
+        ) and self.slope <= 4: 
             self.geological_layout = "River mouth"
 
         elif self.check_coral_islands() is True:
@@ -451,7 +451,7 @@ class CHW:
             str: The name of the geology type
         """
 
-        if self.geology_material == "unconsolidated" and self.slope <= 3:
+        if self.geology_material == "unconsolidated" and self.slope <= 3: 
             return "Sediment plain"
 
         elif self.geology_material == "unconsolidated" and self.slope > 3:
@@ -547,7 +547,7 @@ class CHW:
         if (
             self.db.intersect_with_small_island(self.transect_wkt)
             and self.corals is True
-            and self.median_elevation < 2
+            and self.median_elevation < 2 #TODO: problem with median elevation. Fabdem has 0 in sea while Merit has -9999
         ):
             coral_island = True
         else:
