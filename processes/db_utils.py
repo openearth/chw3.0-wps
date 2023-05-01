@@ -29,6 +29,7 @@
 from .utils import read_config
 import psycopg2
 from typing import List
+import geojson
 import logging
 
 
@@ -640,3 +641,30 @@ class DB:
             barriers_sandspits = cursor.fetchone()[0]
             cursor.close()
         return barriers_sandspits
+    
+    def get_land_polygon(self, wkt, crs=4326):
+        """coast.osm_landpolygon
+        
+        Function that returns the land polygon with which the input line intersects.
+        The polygons is returned dissolved (union) as geojson file
+    
+        
+        Args:
+            wkt (str): Transect
+            crs (int): crs of transect, default to 4326
+
+        Returns:
+            land_polygon: geojson of the land polygon
+        """
+        
+        query = f"""SELECT ST_AsGeoJSON(ST_UNION(geom))
+                    FROM coast.osm_landpolygon
+                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
+                """
+        with self.connection:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            query_result = cursor.fetchone()[0]
+            land_polygon = geojson.loads(query_result)
+            
+        return land_polygon

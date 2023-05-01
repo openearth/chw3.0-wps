@@ -141,7 +141,8 @@ class CHW:
         # bboxes of the transect : To cut the DEM
         self.bbox = get_bounds(self.transect)
         self.bbox_5km = get_bounds(self.transect_5km)
-
+        
+        
         # Get the slope over the 500m inland transect
         try:
             cut_wcs(
@@ -538,8 +539,13 @@ class CHW:
                 username=username,
                 password=geoserver_password,
             )
-
-            self.median_elevation = median_elevation(self.dem_5km2)
+            #get the land polygons that the transect 5km intersects with in order to clip 
+            # the dem_5km from the sea values before inserted to median elevation function.
+            
+            land_polygon = self.db.get_land_polygon(self.transect_5km)
+            #import land_polygon in function that creates the dem_5km2_masked
+            
+            self.median_elevation = median_elevation(self.dem_5km2_masked)
 
         except Exception:
             self.median_elevation = 0
