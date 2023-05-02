@@ -608,17 +608,16 @@ class DB:
             bool: True if intersects, false if not
         """
 
-        query = f"""SELECT EXISTS(
-                    SELECT 1 
+        query = f"""SELECT ST_AsGeoJSON(wkb_geometry) 
                     FROM coast.usgs_islands
                     WHERE ST_Intersects(wkb_geometry, ST_GeomFromText(\'{wkt}\', {crs})) and islandarea < 25
-                )"""
+                """
         with self.connection:
             cursor = self.connection.cursor()
             cursor.execute(query)
             small_island = cursor.fetchone()[0]
             cursor.close()
-        return small_island
+        return geojson.loads(small_island)
 
     def intersect_with_barriers_sandspits(self, wkt, crs=4326):
         """coast.barriers_sandspits
@@ -641,30 +640,3 @@ class DB:
             barriers_sandspits = cursor.fetchone()[0]
             cursor.close()
         return barriers_sandspits
-    
-    def get_land_polygon(self, wkt, crs=4326):
-        """coast.osm_landpolygon
-        
-        Function that returns the land polygon with which the input line intersects.
-        The polygons is returned dissolved (union) as geojson file
-    
-        
-        Args:
-            wkt (str): Transect
-            crs (int): crs of transect, default to 4326
-
-        Returns:
-            land_polygon: geojson of the land polygon
-        """
-        
-        query = f"""SELECT ST_AsGeoJSON(ST_UNION(geom))
-                    FROM coast.osm_landpolygon
-                    WHERE ST_Intersects(geom, ST_GeomFromText(\'{wkt}\', {crs}))
-                """
-        with self.connection:
-            cursor = self.connection.cursor()
-            cursor.execute(query)
-            query_result = cursor.fetchone()[0]
-            land_polygon = geojson.loads(query_result)
-            
-        return land_polygon
