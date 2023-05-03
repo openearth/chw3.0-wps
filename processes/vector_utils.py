@@ -35,16 +35,20 @@ import geojson
 from shapely import wkt
 
 
-def get_bounds(line):
-    # if hasattr(line, "geometry"):
-    # g = shape(line.geometry)
-    # else:
-    # g = wkt.loads(line)
-    # return g.bounds
-    if hasattr(line, "geometry"):
-        g = shape(line.geometry)
+def get_bounds(geom):
+    """Function that creates a bbox for the given geometry.
+    The geometry can be either a geojson or wkt
+
+    Args:
+        geom: geojson or wkt
+
+    Returns:
+        bbox: coordinates of bbox
+    """    
+    if hasattr(geom, "geometry"):
+        g = shape(geom.geometry)
     else:
-        g = wkt.loads(line)
+        g = wkt.loads(geom)
     buffered_polygon = box(*g.bounds).buffer(0.003)
     bbox = buffered_polygon.bounds
 
