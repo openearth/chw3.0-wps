@@ -526,14 +526,11 @@ class CHW:
         In order to be classified as coral island all the following statements should be true:
             if intersect with corals
             if it is an island
-            if the median elevation is <2: this limit was selected via testing
+            if the median elevation is <2: this limit was selected via testing #TODO: Check with Lars if we should increase it.  
         Returns:
             Boolean
         """
 
-            
-        
-        
         if self.db.intersect_with_small_island(self.transect_wkt):
             land_polygon = self.db.get_land_polygon(self.transect_wkt)
             small_island_bbox = get_bounds(land_polygon)
