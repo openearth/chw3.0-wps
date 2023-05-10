@@ -33,6 +33,7 @@ import numpy as np
 
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
+from rasterio.mask import mask
 from scipy.stats import linregress
 from statistics import mean, median
 from pathlib import Path
@@ -175,6 +176,12 @@ def calc_slope(
     segments,
 ):
     """Calculates the slope over a transect.
+    
+    NOTE: before the calculations a pre-process is made. The nan values (eg -9999)
+    are replaced with 0, assuming that at the level of the sea the height will be 0.
+    the nan_to_num method is used for that.
+    
+    Fabdem has already the elevation to the sea as 0.
 
     Args:
         elevations
@@ -185,7 +192,7 @@ def calc_slope(
 
     # Replace nan with 0
     y = np.array(elevations)
-    y = np.nan_to_num(y)
+    y = np.nan_to_num(y) 
 
     x = np.array(segments)
 
@@ -318,10 +325,13 @@ def read_raster_values(file):
         return values
 
 
-def median_elevation(dem):
-    values = read_raster_values(dem)
-    values = np.ma.masked_where(values == -9999, values)
-
-    median_array = np.ma.median(values, axis=0)
+def calc_median_elevation(dem, mask_layer):
+    dataset = rasterio.open(dem)
+    # mask raster based on mask geojson layer (land polygon) and set where nan to 
+    masked_values, out_transform = mask(dataset, [mask_layer["geometry"]], crop=True)
+    
+    masked_values = np.ma.masked_where(masked_values == -9999, masked_values)
+    
+    median_array = np.ma.median(masked_values, axis=0)
     med_elev = np.ma.median(median_array)
     return med_elev

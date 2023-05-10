@@ -44,7 +44,7 @@ from .raster_utils import (
     calc_slope,
     cut_wcs,
     get_elevation_profile,
-    median_elevation,
+    calc_median_elevation,
     calc_slope_200m_inland,
     read_raster_values,
 )
@@ -93,7 +93,7 @@ class CHW:
         # unique temp directory for every run
         self.tmp = create_temp_dir(service_path / "outputs")
         self.dem = Path(self.tmp) / "dem.tif"
-        self.dem_5km2 = Path(self.tmp) / "dem_5km2.tif"
+        self.dem_small_island = Path(self.tmp) / "dem_small_island.tif"
         self.dem_3857 = Path(self.tmp) / "dem_3857.tif"
         self.globcover = Path(self.tmp) / "glocover.tif"
 
@@ -141,7 +141,8 @@ class CHW:
         # bboxes of the transect : To cut the DEM
         self.bbox = get_bounds(self.transect)
         self.bbox_5km = get_bounds(self.transect_5km)
-
+        
+        
         # Get the slope over the 500m inland transect
         try:
             cut_wcs(
@@ -514,45 +515,50 @@ class CHW:
 
     def check_coral_islands(self):
 
-        """Cut the wcs with a bbox of 5km:
-           5km bbox is considered as a good sample to estimate the slope of
-           the whole island
-           We calculate median slope for coral island check.
-           if something goes wrong with cutting the DEM then the slope is set to 0
-
-
+        """
+        Procedure:
+        if intersects with small_island (500m transect)
+            get land polygon geojson of the transect 500m
+            get bounds of it
+            cut wcs with the bounds of the land polygon
+          
+            
         In order to be classified as coral island all the following statements should be true:
             if intersect with corals
             if it is an island
-            if the median elevation is <2: this limit was selected via testing
+            if the median elevation is <2: this limit was selected via testing #TODO: Check with Lars if we should increase it.  
         Returns:
             Boolean
         """
-        try:
 
-            cut_wcs(
-                *self.bbox_5km,
-                self.dem_layer,
-                owsurl,
-                self.dem_5km2,
-                username=username,
-                password=geoserver_password,
-            )
+        if self.db.intersect_with_small_island(self.transect_wkt):
+            land_polygon = self.db.get_land_polygon(self.transect_wkt)
+            small_island_bbox = get_bounds(land_polygon)
+            try:
 
-            self.median_elevation = median_elevation(self.dem_5km2)
-
-        except Exception:
-            self.median_elevation = 0
-
-        if (
-            self.db.intersect_with_small_island(self.transect_wkt)
-            and self.corals is True
-            and self.median_elevation < 2 #TODO: problem with median elevation. Fabdem has 0 in sea while Merit has -9999
-        ):
-            coral_island = True
+                cut_wcs(
+                    *small_island_bbox,
+                    self.dem_layer,
+                    owsurl,
+                    self.dem_small_island,
+                    username=username,
+                    password=geoserver_password,
+                )
+                self.median_elevation = calc_median_elevation(self.dem_small_island, land_polygon)
+            except Exception:
+                self.median_elevation = 0
+            
+            if(self.corals is True and self.median_elevation < 2):
+                coral_island = True
+            else:
+                coral_island = False
+            
         else:
             coral_island = False
+            
         return coral_island
+        
+
 
     def special_case_flat_hard_rock(self):
         """In case we have coral vegetation then flat hard rock or
