@@ -34,6 +34,8 @@
 # http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw2_risk_classification
 
 
+### MERIT
+
 from pywps import Process, Format
 from pywps.inout.inputs import ComplexInput, LiteralInput
 from pywps.inout.outputs import ComplexOutput

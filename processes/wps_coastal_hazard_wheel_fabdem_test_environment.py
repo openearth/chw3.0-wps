@@ -34,8 +34,6 @@
 # http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw2_risk_classification
 
 
-### @Gerrit   FABDEM 
-
 from pywps import Process, Format
 from pywps.inout.inputs import ComplexInput, LiteralInput
 from pywps.inout.outputs import ComplexOutput
@@ -47,10 +45,11 @@ import logging
 import geojson
 from pathlib import Path
 
-from .chw_utils import CHW
+from .chw_utils_test_environment import CHW
 from .utils import write_output, delete_tmp_dir
 import time
 
+######## Test environment for fabdem
 
 class WpsCoastalHazardWheelTest(Process):
     def __init__(self):
@@ -75,7 +74,7 @@ class WpsCoastalHazardWheelTest(Process):
 
         super(WpsCoastalHazardWheelTest, self).__init__(
             self._handler,
-            identifier="chw_risk_classification_test",
+            identifier="chw_risk_classification_test_environment",
             version="3.0",
             title="Risk classification of a coastline.",
             abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 
@@ -99,7 +98,7 @@ class WpsCoastalHazardWheelTest(Process):
             line_geojson = geojson.loads(line_str)
             # coastline_id = request.inputs["coastline_id"][0].data
 
-            chw = CHW(line_geojson, testing=True)
+            chw = CHW(line_geojson, testing=True) 
 
             # 1st level check
             chw.get_info_geological_layout()
