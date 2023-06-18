@@ -51,7 +51,7 @@ import time
 
 ######## Test environment for fabdem
 
-class WpsCoastalHazardWheelTest(Process):
+class WpsCoastalHazardWheelFabdemTestEnvironment(Process):
     def __init__(self):
         # Input [in json format ]
         inputs = [
@@ -72,9 +72,9 @@ class WpsCoastalHazardWheelTest(Process):
             )
         ]
 
-        super(WpsCoastalHazardWheelTest, self).__init__(
+        super(WpsCoastalHazardWheelFabdemTestEnvironment, self).__init__(
             self._handler,
-            identifier="chw_risk_classification_test_environment",
+            identifier="chw_risk_classification_fabdem_test_environment",
             version="3.0",
             title="Risk classification of a coastline.",
             abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 

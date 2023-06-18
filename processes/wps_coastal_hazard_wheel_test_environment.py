@@ -52,7 +52,7 @@ from .utils import write_output, delete_tmp_dir
 
 
 
-class WpsCoastalHazardWheel(Process):
+class WpsCoastalHazardWheelTestEnvironment(Process):
     def __init__(self):
         # Input [in json format ]
         inputs = [
@@ -73,9 +73,9 @@ class WpsCoastalHazardWheel(Process):
             )
         ]
 
-        super(WpsCoastalHazardWheel, self).__init__(
+        super(WpsCoastalHazardWheelTestEnvironment, self).__init__(
             self._handler,
-            identifier="chw_risk_classification",
+            identifier="chw_risk_classification_test_environment",
             version="3.0",
             title="Risk classification of a coastline.",
             abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 

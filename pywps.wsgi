@@ -42,16 +42,21 @@ from processes.ultimate_question import UltimateQuestion
 # chw2
 from processes.wps_coastal_hazard_wheel import WpsCoastalHazardWheel
 from processes.wps_create_transect import WpsCreateTransect
+from processes.wps_coastal_hazard_wheel_fabdem_test_environment import WpsCoastalHazardWheelFabdemTestEnvironment
+from processes.wps_coastal_hazard_wheel_test_environment import WpsCoastalHazardWheelTestEnvironment
 
 # chw2 for testing purposes
 from processes.wps_coastal_hazard_wheel_test import WpsCoastalHazardWheelTest
 
-# TODO add the proces in the processes list
+
 processes = [
     UltimateQuestion(),
     WpsCoastalHazardWheel(),
     WpsCreateTransect(),
     WpsCoastalHazardWheelTest(),
+    WpsCoastalHazardWheelFabdemTestEnvironment(),
+    WpsCoastalHazardWheelTestEnvironment(),
+    
 ]
 
 # Description used in template
