@@ -34,25 +34,25 @@
 # http://localhost:5000/wps?request=DescribeProcess&service=WPS&version=1.0.0&Identifier=chw2_risk_classification
 
 
-### @Gerrit   FABDEM 
+### test environemnt for MERIT
 
 from pywps import Process, Format
 from pywps.inout.inputs import ComplexInput, LiteralInput
 from pywps.inout.outputs import ComplexOutput
 from pywps.app.Common import Metadata
 
-import time
+
 import json
-import logging
+
 import geojson
 from pathlib import Path
 
-from .chw_utils import CHW
+from .chw_utils_test_environment import CHW
 from .utils import write_output, delete_tmp_dir
-import time
 
 
-class WpsCoastalHazardWheelTest(Process):
+
+class WpsCoastalHazardWheelTestEnvironment(Process):
     def __init__(self):
         # Input [in json format ]
         inputs = [
@@ -73,9 +73,9 @@ class WpsCoastalHazardWheelTest(Process):
             )
         ]
 
-        super(WpsCoastalHazardWheelTest, self).__init__(
+        super(WpsCoastalHazardWheelTestEnvironment, self).__init__(
             self._handler,
-            identifier="chw_risk_classification_test",
+            identifier="chw_risk_classification_test_environment",
             version="3.0",
             title="Risk classification of a coastline.",
             abstract="""CHW App derives an indication of the risk based on the Coastal Hazard Wheel methodoloyg. A user drawn profile is the 
@@ -83,7 +83,7 @@ class WpsCoastalHazardWheelTest(Process):
             profile="",
             metadata=[
                 Metadata("WpsCoastalHazardWheel"),
-                Metadata("WpsCoastalHazardWheel/risk_classification_test"),
+                Metadata("WpsCoastalHazardWheel/risk_classification"),
             ],
             inputs=inputs,
             outputs=outputs,
@@ -99,7 +99,7 @@ class WpsCoastalHazardWheelTest(Process):
             line_geojson = geojson.loads(line_str)
             # coastline_id = request.inputs["coastline_id"][0].data
 
-            chw = CHW(line_geojson, testing=True)
+            chw = CHW(line_geojson)
 
             # 1st level check
             chw.get_info_geological_layout()
@@ -127,6 +127,7 @@ class WpsCoastalHazardWheelTest(Process):
             # TODO remove tmp folder.
             # delete_tmp_dir(chw.tmp)
             response.outputs["output_json"].data = json.dumps(output)
+
         except Exception as e:
             res = {"errMsg": f"{e}"}
             response.outputs["output_json"].data = json.dumps(res)
