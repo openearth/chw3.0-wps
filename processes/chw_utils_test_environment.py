@@ -451,7 +451,7 @@ class CHW:
         Returns:
             str: The name of the geology type
         """
-
+        LOGGER.log('special case rocks slope < 2.2')
         if self.geology_material == "unconsolidated" and self.slope <= 2.2: 
             return "Sediment plain"
 
