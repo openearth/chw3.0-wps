@@ -72,12 +72,18 @@ LOGGER = logging.getLogger("PYWPS")
 # various variables declared used in several functions (GHN 26-06-2023)
 #define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
 cov_slope_hr = 2.3
+cov_slope_bd = 3.2  # for bariers and deltas
 
 # define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
 cov_slope_veg = 60
 
 # define variable for cut-off value for median elevation in case of coral islands, use in function check_coral_island
 cov_elev_ci = 8
+
+
+LOGGER.info(f"---cut-off value slope flat hard rock/soft rock/sediment plain---: {cov_slope_hr}")
+LOGGER.info(f"---cut-off value slope vegetation---: {cov_slope_veg}")
+LOGGER.info(f"---cut-off value median elevation coral island---: {cov_elev_ci}")
 
 class CHW:
     def __init__(self, transect, testing=False):
@@ -219,7 +225,7 @@ class CHW:
         elif (
             self.db.intersect_with_barriers_sandspits(self.transect_wkt) is True
             and self.geology_material == "unconsolidated"
-            and self.slope <= 4
+            and self.slope <= cov_slope_bd
         ):
             self.geological_layout = "Barrier"
 
@@ -229,7 +235,7 @@ class CHW:
                 or self.db.intersect_with_estuaries(self.transect_wkt)
             )
             and self.geology_material == "unconsolidated"
-            and self.slope <= 4
+            and self.slope <= cov_slope_bd
         ):
             self.geological_layout = "Delta/ low estuary island"
 
@@ -295,7 +301,7 @@ class CHW:
         """
         mangroves = self.db.intersect_with_mangroves(self.transect_wkt)
         saltmarshes = self.db.intersect_with_saltmarshes(self.transect_wkt)
-        LOGGER.info(f"---Saltamarshes, Mangroves---: {saltmarshes}, {mangroves}")
+        LOGGER.info(f"---Saltmarshes, Mangroves---: {saltmarshes}, {mangroves}")
         # Special case of sloping soft rock
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
@@ -558,7 +564,7 @@ class CHW:
                 self.median_elevation = calc_median_elevation(self.dem_small_island, land_polygon)
             except Exception:
                 self.median_elevation = 0
-            
+            LOGGER.info(f"---Median elevation Coral Island---:{self.median_elevation}")
             if(self.corals is True and self.median_elevation < cov_elev_ci):
                 coral_island = True
             else:
