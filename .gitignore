@@ -21,4 +21,3 @@ _build/
 
 # add the config file
 logs/pywps.log
-logs/pywps.log

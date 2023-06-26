@@ -451,14 +451,14 @@ class CHW:
         Returns:
             str: The name of the geology type
         """
-        LOGGER.log('special case rocks slope < 2.2')
-        if self.geology_material == "unconsolidated" and self.slope <= 2.2: 
+        LOGGER.log('special case rocks slope < 2.3')
+        if self.geology_material == "unconsolidated" and self.slope <= 2.3: 
             return "Sediment plain"
 
-        elif self.geology_material == "unconsolidated" and self.slope > 2.2:
+        elif self.geology_material == "unconsolidated" and self.slope > 2.3:
             return "Sloping soft rock"
 
-        elif self.geology_material == "consolidated" and self.slope <= 2.2:
+        elif self.geology_material == "consolidated" and self.slope <= 2.3:
             return "Flat hard rock"
 
         else:
@@ -470,7 +470,7 @@ class CHW:
         then we assume that the geological layout will be either flat hard rock or sloping hard rock.
         """
         LOGGER.info(f"---Special case hard rock---")
-        if self.slope <= 2.2:
+        if self.slope <= 2.3:
             return "Flat hard rock"
         else:
             return "Sloping hard rock"
@@ -488,7 +488,7 @@ class CHW:
 
         slope = calc_slope_200m_inland(self.elevations, self.segments)
 
-        LOGGER.info(f"---SLOPE 200 m inland--- bnd = 58: {slope}")
+        LOGGER.info(f"---SLOPE 200 m inland--- bnd = 60: {slope}")
 
         cut_wcs(
             *self.bbox,
@@ -508,7 +508,7 @@ class CHW:
         globcover_category_b = values.size - globcover_category_a
         
         #if slope < 30 and (globcover_category_b >= globcover_category_a):
-        if slope < 58 and (globcover_category_b >= globcover_category_a):            
+        if slope < 60 and (globcover_category_b >= globcover_category_a):            
             return "Vegetated"
 
         else:
@@ -551,8 +551,8 @@ class CHW:
                 self.median_elevation = 0
             
             #if(self.corals is True and self.median_elevation < 8 and self.slope < 4): #TODO if we increase to 8 add an extra check of the slope 500 m line smaller than 2.2
-            LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < 7---: {self.median_elevation}")
-            if(self.corals is True and self.median_elevation < 7):
+            LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < 8---: {self.median_elevation}")
+            if(self.corals is True and self.median_elevation < 8):
                 coral_island = True
             else:
                 coral_island = False
@@ -571,7 +571,7 @@ class CHW:
         Returns:
             Boolean
         """
-        if self.corals and self.slope < 2.2:
+        if self.corals and self.slope < 2.3:
             flat_hard_rock = True
         else:
             flat_hard_rock = False
@@ -584,7 +584,7 @@ class CHW:
         Returns:
             Boolean
         """
-        if self.corals and self.slope >= 2.2:
+        if self.corals and self.slope >= 2.3:
             sloping_hard_rock = True
         else:
             sloping_hard_rock = False
