@@ -20,3 +20,4 @@ pywps_demo.egg-info/
 _build/
 
 # add the config file
+logs/pywps.log

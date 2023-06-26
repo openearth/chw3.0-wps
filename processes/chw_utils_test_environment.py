@@ -69,6 +69,15 @@ service_path = Path(__file__).resolve().parent
 
 LOGGER = logging.getLogger("PYWPS")
 
+# various variables declared used in several functions (GHN 26-06-2023)
+#define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
+cov_slope_hr = 2.3
+
+# define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
+cov_slope_veg = 60
+
+# define variable for cut-off value for median elevation in case of coral islands, use in function check_coral_island
+cov_elev_ci = 8
 
 class CHW:
     def __init__(self, transect, testing=False):
@@ -141,6 +150,7 @@ class CHW:
         # bboxes of the transect : To cut the DEM
         self.bbox = get_bounds(self.transect)
         self.bbox_5km = get_bounds(self.transect_5km)
+        
         
         
         # Get the slope over the 500m inland transect
@@ -452,13 +462,13 @@ class CHW:
             str: The name of the geology type
         """
 
-        if self.geology_material == "unconsolidated" and self.slope <= 3: 
+        if self.geology_material == "unconsolidated" and self.slope <= cov_slope_hr: 
             return "Sediment plain"
 
-        elif self.geology_material == "unconsolidated" and self.slope > 3:
+        elif self.geology_material == "unconsolidated" and self.slope > cov_slope_hr:
             return "Sloping soft rock"
 
-        elif self.geology_material == "consolidated" and self.slope <= 3:
+        elif self.geology_material == "consolidated" and self.slope <= cov_slope_hr:
             return "Flat hard rock"
 
         else:
@@ -507,7 +517,8 @@ class CHW:
         globcover_category_a = snow_ice + bare_areas + artificial_surfaces + sparce
         globcover_category_b = values.size - globcover_category_a
 
-        if slope < 30 and (globcover_category_b >= globcover_category_a):
+        # cov_slope_veg = cut-off value vegetation for specific slope categorie, used to be 30
+        if slope < cov_slope_veg and (globcover_category_b >= globcover_category_a):
             return "Vegetated"
 
         else:
@@ -548,7 +559,7 @@ class CHW:
             except Exception:
                 self.median_elevation = 0
             
-            if(self.corals is True and self.median_elevation < 2):
+            if(self.corals is True and self.median_elevation < cov_elev_ci):
                 coral_island = True
             else:
                 coral_island = False
