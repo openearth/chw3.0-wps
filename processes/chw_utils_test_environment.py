@@ -69,6 +69,21 @@ service_path = Path(__file__).resolve().parent
 
 LOGGER = logging.getLogger("PYWPS")
 
+# various variables declared used in several functions (GHN 26-06-2023)
+#define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
+cov_slope_hr = 2.3
+cov_slope_bd = 3.2  # for bariers and deltas
+
+# define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
+cov_slope_veg = 60
+
+# define variable for cut-off value for median elevation in case of coral islands, use in function check_coral_island
+cov_elev_ci = 8
+
+
+LOGGER.info(f"---cut-off value slope flat hard rock/soft rock/sediment plain---: {cov_slope_hr}")
+LOGGER.info(f"---cut-off value slope vegetation---: {cov_slope_veg}")
+LOGGER.info(f"---cut-off value median elevation coral island---: {cov_elev_ci}")
 
 class CHW:
     def __init__(self, transect, testing=False):
@@ -194,7 +209,7 @@ class CHW:
         if (
             self.db.intersect_with_small_estuaries(self.transect_wkt)
             or self.db.intersect_with_small_estuaries(self.transect_100m)
-        ) and self.slope <= 3.2: 
+        ) and self.slope <= cov_slope_bd: 
             self.geological_layout = "River mouth"
 
         elif self.check_coral_islands() is True:
@@ -219,7 +234,7 @@ class CHW:
                 or self.db.intersect_with_estuaries(self.transect_wkt)
             )
             and self.geology_material == "unconsolidated"
-            and self.slope <= 3.2
+            and self.slope <= cov_slope_bd
         ):
             self.geological_layout = "Delta/ low estuary island"
 
@@ -452,13 +467,13 @@ class CHW:
             str: The name of the geology type
         """
         LOGGER.log('special case rocks slope < 2.3')
-        if self.geology_material == "unconsolidated" and self.slope <= 2.3: 
+        if self.geology_material == "unconsolidated" and self.slope <= cov_slope_hr: 
             return "Sediment plain"
 
-        elif self.geology_material == "unconsolidated" and self.slope > 2.3:
+        elif self.geology_material == "unconsolidated" and self.slope > cov_slope_hr:
             return "Sloping soft rock"
 
-        elif self.geology_material == "consolidated" and self.slope <= 2.3:
+        elif self.geology_material == "consolidated" and self.slope <= cov_slope_hr:
             return "Flat hard rock"
 
         else:
@@ -508,7 +523,7 @@ class CHW:
         globcover_category_b = values.size - globcover_category_a
         
         #if slope < 30 and (globcover_category_b >= globcover_category_a):
-        if slope < 60 and (globcover_category_b >= globcover_category_a):            
+        if slope < cov_slope_veg and (globcover_category_b >= globcover_category_a):            
             return "Vegetated"
 
         else:
@@ -552,7 +567,7 @@ class CHW:
             
             #if(self.corals is True and self.median_elevation < 8 and self.slope < 4): #TODO if we increase to 8 add an extra check of the slope 500 m line smaller than 2.2
             LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < 8---: {self.median_elevation}")
-            if(self.corals is True and self.median_elevation < 8):
+            if(self.corals is True and self.median_elevation < cov_elev_ci):
                 coral_island = True
             else:
                 coral_island = False
