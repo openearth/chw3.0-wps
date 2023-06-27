@@ -72,7 +72,7 @@ LOGGER = logging.getLogger("PYWPS")
 # various variables declared used in several functions (GHN 26-06-2023)
 #define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
 cov_slope_hr = 2.3
-cov_slope_bd = 3.2  # for bariers and deltas
+cov_slope_bd = 3.2  # for barriers and deltas
 
 # define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
 cov_slope_veg = 60
@@ -466,7 +466,7 @@ class CHW:
         Returns:
             str: The name of the geology type
         """
-        LOGGER.log('special case rocks slope < 2.3')
+        LOGGER.log(f'special case rocks slope < {cov_slope_hr}')
         if self.geology_material == "unconsolidated" and self.slope <= cov_slope_hr: 
             return "Sediment plain"
 
@@ -566,7 +566,7 @@ class CHW:
                 self.median_elevation = 0
             
             #if(self.corals is True and self.median_elevation < 8 and self.slope < 4): #TODO if we increase to 8 add an extra check of the slope 500 m line smaller than 2.2
-            LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < 8---: {self.median_elevation}")
+            LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < {cov_elev_ci}---: {self.median_elevation}")
             if(self.corals is True and self.median_elevation < cov_elev_ci):
                 coral_island = True
             else:
