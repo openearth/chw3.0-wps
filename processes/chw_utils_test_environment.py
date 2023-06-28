@@ -586,7 +586,8 @@ class CHW:
         Returns:
             Boolean
         """
-        if self.corals and self.slope < 2.3:
+        LOGGER.info(f"---Special case flat hard rock < {cov_slope_hr}")
+        if self.corals and self.slope < cov_slope_hr:
             flat_hard_rock = True
         else:
             flat_hard_rock = False
@@ -599,7 +600,8 @@ class CHW:
         Returns:
             Boolean
         """
-        if self.corals and self.slope >= 2.3:
+        LOGGER.info(f"---Special case sloping hard rock < {cov_slope_hr}")
+        if self.corals and self.slope >= cov_slope_hr:
             sloping_hard_rock = True
         else:
             sloping_hard_rock = False
