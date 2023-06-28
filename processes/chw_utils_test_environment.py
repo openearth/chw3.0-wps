@@ -224,7 +224,7 @@ class CHW:
         elif (
             self.db.intersect_with_barriers_sandspits(self.transect_wkt) is True
             and self.geology_material == "unconsolidated"
-            and self.slope <= 3.2
+            and self.slope <= cov_slope_bd
         ):
             self.geological_layout = "Barrier"
 
@@ -242,6 +242,8 @@ class CHW:
             self.geological_layout = self.check_geology_type()
         else:
             self.geological_layout = self.special_case_hard_rock()
+        
+        LOGGER.info('is there a crash after this?')
         LOGGER.info(f"---GEOLOGICAL_LAYOUT---: {self.geological_layout}")
 
     # 2nd level check
@@ -600,7 +602,7 @@ class CHW:
         Returns:
             Boolean
         """
-        LOGGER.info(f"---Special case sloping hard rock < {cov_slope_hr}")
+        LOGGER.info(f"---Special case sloping hard rock >= {cov_slope_hr}")
         if self.corals and self.slope >= cov_slope_hr:
             sloping_hard_rock = True
         else:
