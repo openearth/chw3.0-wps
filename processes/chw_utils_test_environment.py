@@ -521,7 +521,7 @@ class CHW:
         globcover_category_b = values.size - globcover_category_a
         
         #if slope < 30 and (globcover_category_b >= globcover_category_a):
-        if slope < 60 and (globcover_category_b >= globcover_category_a):            
+        if slope < cov_slope_veg and (globcover_category_b >= globcover_category_a):            
             return "Vegetated"
 
         else:
