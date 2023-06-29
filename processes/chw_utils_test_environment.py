@@ -565,7 +565,7 @@ class CHW:
             
             #if(self.corals is True and self.median_elevation < 8 and self.slope < 4): #TODO if we increase to 8 add an extra check of the slope 500 m line smaller than 2.2
             LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < {cov_elev_ci}---: {self.median_elevation}")
-            if(self.corals is True and self.median_elevation < 8):
+            if(self.corals is True and self.median_elevation < cov_elev_ci):
                 coral_island = True
             else:
                 coral_island = False
