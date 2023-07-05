@@ -72,10 +72,10 @@ LOGGER = logging.getLogger("PYWPS")
 # various variables declared used in several functions (GHN 26-06-2023)
 #define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
 cov_slope_hr = 2.3
-cov_slope_bd = 3.2  # for barriers and deltas
+cov_slope_bd = 3.5  # for barriers and deltas
 
 # define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
-cov_slope_veg = 60
+cov_slope_veg = 59
 
 # define variable for cut-off value for median elevation in case of coral islands, use in function check_coral_island
 cov_elev_ci = 8
