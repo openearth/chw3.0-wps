@@ -78,7 +78,7 @@ cov_slope_bd = 3.5  # for barriers and deltas
 cov_slope_veg = 59
 
 # define variable for cut-off value for median elevation in case of coral islands, use in function check_coral_island
-cov_elev_ci = 8
+cov_elev_ci = 14
 
 
 class CHW:
