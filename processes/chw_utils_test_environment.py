@@ -71,22 +71,23 @@ LOGGER = logging.getLogger("PYWPS")
 
 # various variables declared used in several functions (GHN 26-06-2023)
 #define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
-cov_slope_hr = 2.3
-cov_slope_bd = 3.2  # for bariers and deltas
+#cov = cut off value 
+
+cov_slope_hr = 2.3  #hr = hard rock
+cov_slope_bd = 3.5  #  bd = for barriers and deltas
 
 # define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
-cov_slope_veg = 60
+cov_slope_veg = 59
 
 # define variable for cut-off value for median elevation in case of coral islands, use in function check_coral_island
-cov_elev_ci = 8
+cov_elev_ci = 14
 
-
-LOGGER.info(f"---cut-off value slope flat hard rock/soft rock/sediment plain---: {cov_slope_hr}")
-LOGGER.info(f"---cut-off value slope vegetation---: {cov_slope_veg}")
-LOGGER.info(f"---cut-off value median elevation coral island---: {cov_elev_ci}")
 
 class CHW:
     def __init__(self, transect, testing=False):
+        LOGGER.info(f"---cut-off value slope flat hard rock/soft rock/sediment plain---: {cov_slope_hr}")
+        LOGGER.info(f"---cut-off value slope vegetation---: {cov_slope_veg}")
+        LOGGER.info(f"---cut-off value median elevation coral island---: {cov_elev_ci}")
 
         # The transect will be always 500 meters inland
         self.transect = transect
@@ -133,6 +134,11 @@ class CHW:
             wkt=self.transect_wkt,
             dist=4000,
             direction=-180,
+        )
+        self.transect_4km_inland = self.db.ST_line_extend(
+            wkt=self.transect_wkt,
+            dist=4000,
+            direction=180,
         )
         self.transect_6km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
@@ -190,7 +196,7 @@ class CHW:
         except Exception:
             self.geology = None
         # Check if intersect with corals 4km in the sea. Important for define geological layout and coral vegetation
-        self.corals = self.db.intersect_with_corals(self.transect_6km)
+        self.corals = self.db.intersect_with_corals(self.transect_6km) or self.db.intersect_with_corals(self.transect_4km_inland)
         LOGGER.info(f"---Corals vegetation is---: {self.corals}")
         self.geology_material = (
             "unconsolidated"
@@ -207,10 +213,11 @@ class CHW:
         finally geology type check.
         """
         # TODO check_river_mouth
+        LOGGER.info(f"---slope, cov_slope_bd, geolory---: {self.slope},{cov_slope_bd},{self.geology}")
         if (
             self.db.intersect_with_small_estuaries(self.transect_wkt)
             or self.db.intersect_with_small_estuaries(self.transect_100m)
-        ) and self.slope <= 4: 
+        ) and self.slope <= cov_slope_bd: 
             self.geological_layout = "River mouth"
 
         elif self.check_coral_islands() is True:
@@ -221,12 +228,11 @@ class CHW:
 
         elif self.special_case_sloping_hard_rock() is True:
             self.geological_layout = "Sloping hard rock"
-
+    
         elif (
             self.db.intersect_with_barriers_sandspits(self.transect_wkt) is True
             and self.geology_material == "unconsolidated"
-            and self.slope <= cov_slope_bd
-        ):
+            and self.slope <= cov_slope_bd):
             self.geological_layout = "Barrier"
 
         elif (
@@ -235,14 +241,13 @@ class CHW:
                 or self.db.intersect_with_estuaries(self.transect_wkt)
             )
             and self.geology_material == "unconsolidated"
-            and self.slope <= cov_slope_bd
-        ):
+            and self.slope <= cov_slope_bd):
             self.geological_layout = "Delta/ low estuary island"
-
         elif self.geology != None:
             self.geological_layout = self.check_geology_type()
         else:
             self.geological_layout = self.special_case_hard_rock()
+
         LOGGER.info(f"---GEOLOGICAL_LAYOUT---: {self.geological_layout}")
 
     # 2nd level check
@@ -459,7 +464,7 @@ class CHW:
         Connects to database and gets the values of geology type
         Checks if unconsolidated material
         values are dominant in the area
-        For slope check 3% limit was selected.
+        For slope check 3% limit was selected. During the process this is finetuned to current values (GerritH, 12-06-2023)
              Sediment plain
              Sloping soft rock
              Flat hard rock
@@ -467,7 +472,6 @@ class CHW:
         Returns:
             str: The name of the geology type
         """
-
         if self.geology_material == "unconsolidated" and self.slope <= cov_slope_hr: 
             return "Sediment plain"
 
@@ -485,11 +489,12 @@ class CHW:
         """In case no corals, no barriers, no delta low estuary and no geology is retrieved
         then we assume that the geological layout will be either flat hard rock or sloping hard rock.
         """
-        LOGGER.info(f"---Special case hard rock---")
-        if self.slope <= 3:
+        if self.slope <= cov_slope_hr:
+            LOGGER.info(f"---Special case hard rock---: falt hr")
             return "Flat hard rock"
         else:
-            return "Sloping hard rock"
+            LOGGER.info(f"---Special case hard rock---: sloping hr")
+            return "Sloping hard rock" 
 
     def get_vegetation(self):
         """
@@ -504,7 +509,7 @@ class CHW:
 
         slope = calc_slope_200m_inland(self.elevations, self.segments)
 
-        LOGGER.info(f"---SLOPE 200 m inland---: {slope}")
+        LOGGER.info(f"---SLOPE 200 m inland--- bnd = 60: {slope}")
 
         cut_wcs(
             *self.bbox,
@@ -522,9 +527,9 @@ class CHW:
         sparce = np.count_nonzero(values == 150)
         globcover_category_a = snow_ice + bare_areas + artificial_surfaces + sparce
         globcover_category_b = values.size - globcover_category_a
-
-        # cov_slope_veg = cut-off value vegetation for specific slope categorie, used to be 30
-        if slope < cov_slope_veg and (globcover_category_b >= globcover_category_a):
+        
+        #if slope < 30 and (globcover_category_b >= globcover_category_a):
+        if slope < cov_slope_veg and (globcover_category_b >= globcover_category_a):            
             return "Vegetated"
 
         else:
@@ -562,9 +567,12 @@ class CHW:
                     password=geoserver_password,
                 )
                 self.median_elevation = calc_median_elevation(self.dem_small_island, land_polygon)
+                LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND---: {self.median_elevation}")
             except Exception:
                 self.median_elevation = 0
-            LOGGER.info(f"---Median elevation Coral Island---:{self.median_elevation}")
+            
+            #if(self.corals is True and self.median_elevation < 8 and self.slope < 4): #TODO if we increase to 8 add an extra check of the slope 500 m line smaller than 2.2
+            LOGGER.info(f"---MEDIAN ELEVATION OF ISLAND < {cov_elev_ci}---: {self.median_elevation}")
             if(self.corals is True and self.median_elevation < cov_elev_ci):
                 coral_island = True
             else:
@@ -572,7 +580,7 @@ class CHW:
             
         else:
             coral_island = False
-            
+        LOGGER.info(f"---ci---: {coral_island}")    
         return coral_island
         
 
@@ -580,27 +588,31 @@ class CHW:
     def special_case_flat_hard_rock(self):
         """In case we have coral vegetation then flat hard rock or
         sloping hard rock geology
-
+        Slope class fine tuned (GerritH 12-06-2023)
         Returns:
             Boolean
         """
-        if self.corals and self.slope < 3:
+        LOGGER.info(f"---Special case flat hard rock < {cov_slope_hr}")
+        if self.corals and self.slope < cov_slope_hr:
             flat_hard_rock = True
         else:
             flat_hard_rock = False
+        LOGGER.info(f"---Special case fhr---: {flat_hard_rock}")
         return flat_hard_rock
 
     def special_case_sloping_hard_rock(self):
         """In case we have coral vegetation then flat hard rock or
         sloping hard rock geology
-
+        Slope class fine tuned (GerritH 12-06-2023)
         Returns:
             Boolean
         """
-        if self.corals and self.slope >= 3:
+        
+        if self.corals and self.slope >= cov_slope_hr:
             sloping_hard_rock = True
         else:
             sloping_hard_rock = False
+        LOGGER.info(f"---Special case sloping hard rock >= {cov_slope_hr}, returned: {sloping_hard_rock}")
         return sloping_hard_rock
 
     def translate_hazard_danger(self):
