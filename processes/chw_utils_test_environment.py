@@ -164,6 +164,7 @@ class CHW:
         self.bbox_5km = get_bounds(self.transect_5km)
         
         
+        
         # Get the slope over the 500m inland transect
         try:
             cut_wcs(
@@ -305,7 +306,7 @@ class CHW:
         """
         mangroves = self.db.intersect_with_mangroves(self.transect_wkt)
         saltmarshes = self.db.intersect_with_saltmarshes(self.transect_wkt)
-        LOGGER.info(f"---Saltamarshes, Mangroves---: {saltmarshes}, {mangroves}")
+        LOGGER.info(f"---Saltmarshes, Mangroves---: {saltmarshes}, {mangroves}")
         # Special case of sloping soft rock
         if self.geological_layout == "Sloping soft rock":
             self.flora_fauna = self.get_vegetation()
