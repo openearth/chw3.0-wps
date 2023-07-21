@@ -71,8 +71,10 @@ LOGGER = logging.getLogger("PYWPS")
 
 # various variables declared used in several functions (GHN 26-06-2023)
 #define flat hard rock/soft rock/sediment plain cut-off value for slope, used in function check_geology_type
-cov_slope_hr = 2.3
-cov_slope_bd = 3.5  # for barriers and deltas
+#cov = cut off value 
+
+cov_slope_hr = 2.3  #hr = hard rock
+cov_slope_bd = 3.5  #  bd = for barriers and deltas
 
 # define variable for cut-off value for slope with specific vegetation, use in function check_vegetation
 cov_slope_veg = 59
@@ -133,6 +135,11 @@ class CHW:
             dist=4000,
             direction=-180,
         )
+        self.transect_4km_inland = self.db.ST_line_extend(
+            wkt=self.transect_wkt,
+            dist=4000,
+            direction=180,
+        )
         self.transect_6km = self.db.ST_line_extend(
             wkt=self.transect_wkt,
             dist=6000,
@@ -188,7 +195,7 @@ class CHW:
         except Exception:
             self.geology = None
         # Check if intersect with corals 4km in the sea. Important for define geological layout and coral vegetation
-        self.corals = self.db.intersect_with_corals(self.transect_6km)
+        self.corals = self.db.intersect_with_corals(self.transect_6km) or self.db.intersect_with_corals(self.transect_4km_inland)
         LOGGER.info(f"---Corals vegetation is---: {self.corals}")
         self.geology_material = (
             "unconsolidated"
