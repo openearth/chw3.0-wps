@@ -12,3 +12,4 @@ dependencies:
   - rasterio=1
   - scipy=1
   - shapely=1
+  - pyproj=3
