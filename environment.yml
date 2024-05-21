@@ -11,3 +11,4 @@ dependencies:
   - psycopg2=2
   - rasterio=1
   - scipy=1
+  - shapely=1
