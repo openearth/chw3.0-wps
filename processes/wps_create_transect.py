@@ -42,7 +42,7 @@ from pywps.app.Common import Metadata
 import json
 import geojson
 
-from .utils import read_config
+from .utils import read_config, loguseractivity
 from .db_utils import DB
 from .vector_utils import geojson_to_wkt, wkt_geometry
 
@@ -90,6 +90,10 @@ class WpsCreateTransect(Process):
         """Handler function of the WpsCreateTransect"""
 
         try:
+            # log useractivity
+            loguseractivity('chw-app')
+
+            # get credentials for database
             host, user, password, db, _, _, _, _, _, _, _ = read_config()
             db = DB(user, password, host, db)
 

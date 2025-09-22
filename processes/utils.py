@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright notice
 #   --------------------------------------------------------------------
-#   Copyright (C) 2020 Deltares
+#   Copyright (C) 2020, 2025 Deltares
 #       Gerrit Hendriksen, Ioanna Micha
 #
 #       gerrit.hendriksen@deltares.nl, ioanna.micha@deltares.nl
@@ -26,6 +26,7 @@
 # Sign up to recieve regular updates of this function, and to contribute
 # your own tools.
 
+import os
 import configparser
 from pathlib import Path
 import tempfile
@@ -99,6 +100,25 @@ def translate_hazard_danger(hazard):
             hazard = "Very High"
     return hazard
 
+def loguseractivity(toolname):
+    """Logs user activity of the specified tool name ans write to a log
+
+    Args:
+        toolname (string): name of the tool used
+    Returns:
+        None
+    """
+    # other
+    from datetime import datetime
+
+    # very basic logging
+    log_dir = '/opt/pywps/logs' if os.name != 'nt' else './logs'
+    fn = os.path.join(log_dir, 'user_activity.log')
+    # write (append) to toolname with datetime to the logfile
+    with open(fn, 'a+') as f:
+        log_message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')},{toolname}\n"
+        f.write(log_message)
+    return
 
 def write_output(chw):
     # TODO: Now exclamation mark is assumed to appear only in Gradual inundation. Make it configurable in the future
