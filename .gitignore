@@ -5,6 +5,8 @@ static/*
 processes/outputs/*
 processes/configuration.txt
 notebooks/test.tif
+logs/*
+
 # vim, mac os
 *.sw*
 .DS_Store
