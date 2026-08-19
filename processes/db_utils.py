@@ -42,6 +42,15 @@ class DB:
         self.connection = psycopg2.connect(
             user=self.user, password=self.password, host=self.host, database=self.db
         )
+        self._postgis_lib_version = None
+
+    def postgis_lib_version(self):
+        if self._postgis_lib_version is None:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT postgis_lib_version();")
+            self._postgis_lib_version = cursor.fetchone()[0]
+            cursor.close()
+        return self._postgis_lib_version
 
     def close_db_connection(self):
         self.connection.close()
@@ -383,13 +392,14 @@ class DB:
         transect = f"ST_GeomFromText('{wkt}', {crs})"
         P1 = f"ST_StartPoint({transect})"
         P2 = f"ST_EndPoint({transect})"
-        if direction == -180:
-            azimuth = f"ST_Azimuth({P2}::geometry,{P1}::geometry)"
-        elif direction == 180:
-            azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
-
         extension_length = dist
-        projection = f"ST_Project({P1}, {extension_length}, {azimuth})"
+        # Always cast to geography explicitly: ST_Project on bare geometry interprets
+        # distance in the SRID's native units (degrees), not meters.
+        if direction == -180:
+            azimuth = f"ST_Azimuth({P2}::geography,{P1}::geography)"
+        elif direction == 180:
+            azimuth = f"ST_Azimuth({P1}::geography,{P2}::geography)"
+        projection = f"ST_Project({P1}::geography, {extension_length}, {azimuth})"
 
         query = f"SELECT ST_AsText(ST_MakeLine({P1}::geometry, {projection}::geometry))"
         with self.connection:
@@ -432,9 +442,10 @@ class DB:
         P1 = f"ST_GeomFromText('{point_on_sea}', {crs})"
         P2 = f"ST_GeomFromText('{point_on_coast}', {crs})"
 
-        azimuth = f"ST_Azimuth({P1}::geometry,{P2}::geometry)"
-
-        projection = f"ST_Project({P2}, {dist}, {azimuth})"
+        # Always cast to geography explicitly: ST_Project on bare geometry interprets
+        # distance in the SRID's native units (degrees), not meters.
+        azimuth = f"ST_Azimuth({P1}::geography,{P2}::geography)"
+        projection = f"ST_Project({P2}::geography, {dist}, {azimuth})"
 
         query = f"SELECT ST_AsText(ST_MakeLine({P2}::geometry, {projection}::geometry))"
         with self.connection:
