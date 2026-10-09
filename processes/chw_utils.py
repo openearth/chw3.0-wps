@@ -48,7 +48,12 @@ from .raster_utils import (
     calc_slope_200m_inland,
     read_raster_values,
 )
-from .utils import create_temp_dir, read_config, translate_hazard_danger
+from .utils import (
+    cleanup_temp_dir_on_error,
+    create_temp_dir,
+    read_config,
+    translate_hazard_danger,
+)
 from .vector_utils import change_coords, geojson_to_wkt, get_bounds
 import numpy as np
 
@@ -71,6 +76,7 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class CHW:
+    @cleanup_temp_dir_on_error
     def __init__(self, transect, testing=False):
 
         # The transect will be always 500 meters inland

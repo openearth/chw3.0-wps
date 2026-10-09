@@ -93,6 +93,7 @@ class WpsCoastalHazardWheel(Process):
 
     def _handler(self, request, response):
         """Handler function of the WpsChw2"""
+        chw = None
         try:
 
             line_str = request.inputs["transect"][0].data
@@ -124,10 +125,11 @@ class WpsCoastalHazardWheel(Process):
             chw.translate_hazard_danger()  # TODO Remove this function and translate the numbers directly in the database
 
             output = write_output(chw)
-            # TODO remove tmp folder.
-            # delete_tmp_dir(chw.tmp)
             response.outputs["output_json"].data = json.dumps(output)
 
         except Exception as e:
             res = {"errMsg": f"{e}"}
             response.outputs["output_json"].data = json.dumps(res)
+        finally:
+            if chw is not None:
+                delete_tmp_dir(chw.tmp)

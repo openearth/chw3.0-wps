@@ -32,6 +32,7 @@ from pathlib import Path
 import tempfile
 import shutil
 import logging
+from functools import wraps
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -85,7 +86,21 @@ def delete_tmp_dir(dir):
     try:
         shutil.rmtree(dir)
     except OSError as e:
-        LOGGER.info(f"Error: {dir} : {e.sterror}")
+        LOGGER.error("Could not remove temporary directory %s: %s", dir, e)
+
+
+def cleanup_temp_dir_on_error(initializer):
+    @wraps(initializer)
+    def wrapped(self, *args, **kwargs):
+        try:
+            initializer(self, *args, **kwargs)
+        except Exception:
+            tmp_dir = getattr(self, "tmp", None)
+            if tmp_dir is not None:
+                delete_tmp_dir(tmp_dir)
+            raise
+
+    return wrapped
 
 
 def translate_hazard_danger(hazard):
